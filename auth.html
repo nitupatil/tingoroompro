@@ -14,12 +14,12 @@
     <!-- OneSignal Web SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     
-    <!-- Global Config -->
+    <!-- Global Config (Ensure config.js exists in the same folder) -->
     <script src="config.js"></script>
 
     <style>
         :root {
-            --primary: #064e3b; /* Deep Green */
+            --primary: #064e3b;
             --primary-hover: #065f46;
             --accent: #10b981;
             --bg: #f4f4f5;
@@ -137,14 +137,14 @@
                 <a onclick="switchView('view-forgot')" style="color: var(--text-light); cursor: pointer;">Forgot password?</a>
             </div>
             
-            <button class="btn-full" onclick="loginUser()">Log In</button>
+            <button class="btn-full" id="loginBtn" onclick="loginUser()">Log In</button>
             
             <div class="links">
                 Don't have an account? <a onclick="switchView('view-register')">Sign up</a>
             </div>
         </div>
 
-        <!-- REGISTER VIEW (Step 1) -->
+        <!-- REGISTER VIEW -->
         <div id="view-register" class="view-section">
             <h2>Create an account</h2>
             <p class="subtitle">Join the premium room marketplace.</p>
@@ -159,14 +159,14 @@
                 <input type="password" id="regPass" placeholder="Create Password">
             </div>
             
-            <button class="btn-full" onclick="submitRegistration()">Send OTP</button>
+            <button class="btn-full" id="regBtn" onclick="submitRegistration()">Send OTP</button>
             
             <div class="links">
                 Already have an account? <a onclick="switchView('view-login')">Log in</a>
             </div>
         </div>
 
-        <!-- OTP VERIFICATION VIEW (Step 2) -->
+        <!-- OTP VERIFICATION VIEW -->
         <div id="view-otp" class="view-section">
             <h2>Verify your email</h2>
             <p class="subtitle">We sent a 6-digit code to your email.</p>
@@ -187,7 +187,7 @@
                 <input type="email" id="forgotEmail" placeholder="Email Address">
             </div>
             
-            <button class="btn-full" onclick="forgotPassword()">Send Reset Link</button>
+            <button class="btn-full" id="forgotBtn" onclick="forgotPassword()">Send Reset Link</button>
             
             <div class="links">
                 Remember your password? <a onclick="switchView('view-login')">Log in</a>
@@ -196,24 +196,32 @@
 
     </div>
 
-    <!-- Application Logic -->
     <script>
-        // 1. Initialize Supabase using the global config file
+        // Ensure config.js is loaded
+        if (typeof CONFIG === 'undefined') {
+            alert("Configuration file (config.js) is missing. Features will not work.");
+        }
+
         const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-        // 2. Initialize OneSignal
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.init({
                 appId: CONFIG.ONESIGNAL_APP_ID,
-                notifyButton: { enable: true } // Adds a bell icon if user blocks native prompt
+                notifyButton: { enable: true }
             });
         });
 
-        // --- UI Navigation ---
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
+        }
+
+        function setLoading(btnId, isLoading, text) {
+            const btn = document.getElementById(btnId);
+            btn.disabled = isLoading;
+            btn.innerText = isLoading ? "Processing..." : text;
+            btn.style.opacity = isLoading ? "0.7" : "1";
         }
 
         // --- REGISTRATION FLOW ---
@@ -223,108 +231,135 @@
             const pass = document.getElementById('regPass').value;
 
             if(!name || !email || !pass) { alert("Please fill all fields."); return; }
+            setLoading('regBtn', true, 'Send OTP');
 
-            // Insert into Users table (Triggers backend OTP generation)
-            const { error } = await supabase.from('users').insert([
-                { name: name, email: email, password_hash: pass, status: 'unverified' }
-            ]);
+            try {
+                const { error } = await supabase.from('users').insert([
+                    { name: name, email: email, password_hash: pass, status: 'unverified' }
+                ]);
 
-            if (error) { 
-                alert('Error: ' + error.message); 
-                return; 
+                if (error) throw error;
+                switchView('view-otp');
+            } catch (err) {
+                console.error("Signup Error:", err);
+                alert('Signup failed: ' + err.message);
+            } finally {
+                setLoading('regBtn', false, 'Send OTP');
             }
-            switchView('view-otp');
         }
 
         async function verifyOTP() {
             const email = document.getElementById('regEmail').value;
             const otp = document.getElementById('regOtp').value;
 
-            const { data: isValid, error } = await supabase.rpc('verify_user_otp', {
-                user_email: email, entered_otp: otp
-            });
+            try {
+                const { data: isValid, error } = await supabase.rpc('verify_user_otp', {
+                    user_email: email, entered_otp: otp
+                });
 
-            if (isValid) {
-                alert("Account verified! You can now log in.");
-                switchView('view-login');
-            } else {
-                alert("Invalid or Expired OTP.");
+                if (error) throw error;
+
+                if (isValid) {
+                    alert("Account verified! You can now log in.");
+                    switchView('view-login');
+                } else {
+                    alert("Invalid or Expired OTP.");
+                }
+            } catch (err) {
+                console.error("OTP Error:", err);
+                alert("Verification failed: " + err.message);
             }
         }
 
-        // --- LOGIN & ONESIGNAL FLOW ---
+        // --- LOGIN FLOW ---
         async function loginUser() {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
 
-            // Authenticate
-            const { data, error } = await supabase
-                .from('users')
-                .select('id, name, status')
-                .eq('email', email)
-                .eq('password_hash', pass)
-                .single();
+            if(!email || !pass) { alert("Enter email and password."); return; }
+            setLoading('loginBtn', true, 'Log In');
 
-            if (error || !data) { 
-                alert('Invalid credentials.'); 
-                return; 
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id, name, status')
+                    .eq('email', email)
+                    .eq('password_hash', pass)
+                    .single();
+
+                if (error || !data) throw new Error('Invalid email or password.');
+                if (data.status === 'unverified') throw new Error('Please verify your account via OTP first.');
+
+                const deviceToken = 'dev_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('tingo_session_token', deviceToken);
+                localStorage.setItem('tingo_user_id', data.id);
+                localStorage.setItem('tingo_user_name', data.name);
+
+                await supabase.from('users').update({ auth_token: deviceToken }).eq('id', data.id);
+
+                // Initialize Push Notifications
+                await setupPushNotifications(data.id);
+
+                alert('Logged in successfully!');
+                // window.location.href = 'dashboard.html'; // Uncomment when dashboard is ready
+                
+            } catch (err) {
+                console.error("Login Error:", err);
+                alert(err.message);
+            } finally {
+                setLoading('loginBtn', false, 'Log In');
             }
-            if (data.status === 'unverified') {
-                alert('Please verify your account first.');
-                return;
-            }
-
-            // Generate Device Token for Single-Device constraint
-            const deviceToken = 'dev_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('tingo_session_token', deviceToken);
-            localStorage.setItem('tingo_user_id', data.id);
-
-            // Update Auth Token in Supabase
-            await supabase.from('users').update({ auth_token: deviceToken }).eq('id', data.id);
-
-            // Setup Push Notifications & Capture ID
-            await setupPushNotifications(data.id);
-
-            alert('Logged in successfully!');
-            window.location.href = 'dashboard.html'; // Redirect to user dashboard
         }
 
         async function setupPushNotifications(userId) {
-            // Prompt the user to allow notifications
-            await OneSignal.Slidedown.promptPush();
-            
-            // Fetch the unique device/browser ID generated by OneSignal
-            const onesignalId = OneSignal.User.PushSubscription.id;
-            
-            if (onesignalId) {
-                // Save this ID to the user's profile in Supabase
-                await supabase
-                    .from('users')
-                    .update({ onesignal_id: onesignalId })
-                    .eq('id', userId);
-                console.log("OneSignal ID synced with database.");
+            try {
+                await OneSignal.Slidedown.promptPush();
+                const onesignalId = OneSignal.User.PushSubscription.id;
+                
+                if (onesignalId) {
+                    await supabase.from('users').update({ onesignal_id: onesignalId }).eq('id', userId);
+                }
+            } catch (err) {
+                console.error("OneSignal setup failed:", err);
+                // We don't alert the user here, just log it so login isn't interrupted
             }
         }
 
-        // --- FORGOT PASSWORD FLOW ---
+        // --- FORGOT PASSWORD FLOW (Fixed) ---
         async function forgotPassword() {
             const email = document.getElementById('forgotEmail').value;
             if(!email) { alert("Enter your email address."); return; }
+            setLoading('forgotBtn', true, 'Send Reset Link');
 
-            // Insert a row into the email_notifications table to trigger Apps Script via Webhook
-            const { error } = await supabase.from('email_notifications').insert([{
-                recipient_email: email,
-                subject: "Reset your TingoRooms Password",
-                template_name: "password_reset",
-                body: `<p>Click here to reset your password: <a href="https://yourgithubpagesurl.com/reset.html?email=${email}">Reset Password</a></p>`,
-                status: 'pending'
-            }]);
+            try {
+                // 1. Fetch the user's ID first
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('email', email)
+                    .single();
 
-            if (error) {
-                alert("Error sending reset link.");
-            } else {
-                alert("If this email exists, a reset link has been sent.");
+                if (userError || !userData) throw new Error("Email not found in our system.");
+
+                // 2. Insert the notification using the valid user_id
+                const { error: notifyError } = await supabase.from('email_notifications').insert([{
+                    user_id: userData.id,
+                    recipient_email: email,
+                    subject: "Reset your TingoRooms Password",
+                    template_name: "password_reset",
+                    body: `<p>Click here to reset your password: <a href="https://yourgithubpagesurl.com/reset.html?email=${email}">Reset Password</a></p>`,
+                    status: 'pending'
+                }]);
+
+                if (notifyError) throw notifyError;
+
+                alert("A reset link has been sent to your email.");
                 switchView('view-login');
+            } catch (err) {
+                console.error("Forgot Password Error:", err);
+                alert(err.message);
+            } finally {
+                setLoading('forgotBtn', false, 'Send Reset Link');
             }
         }
     </script>
