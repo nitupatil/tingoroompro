@@ -102,6 +102,7 @@
             margin-top: 10px;
         }
         .btn-full:hover { background: var(--primary-hover); }
+        .btn-full:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .links {
             text-align: center;
@@ -197,13 +198,15 @@
     </div>
 
     <script>
-        // Ensure config.js is loaded
+        // Check for config file
         if (typeof CONFIG === 'undefined') {
             alert("Configuration file (config.js) is missing. Features will not work.");
         }
 
-        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        // Fix: Renamed variable to supabaseClient to prevent naming collision with the CDN
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
+        // OneSignal Initialization
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.init({
@@ -212,6 +215,7 @@
             });
         });
 
+        // --- UI Navigation ---
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -221,7 +225,6 @@
             const btn = document.getElementById(btnId);
             btn.disabled = isLoading;
             btn.innerText = isLoading ? "Processing..." : text;
-            btn.style.opacity = isLoading ? "0.7" : "1";
         }
 
         // --- REGISTRATION FLOW ---
@@ -231,10 +234,11 @@
             const pass = document.getElementById('regPass').value;
 
             if(!name || !email || !pass) { alert("Please fill all fields."); return; }
-            setLoading('regBtn', true, 'Send OTP');
+            setLoading('regBtn', true, 'Sending...');
 
             try {
-                const { error } = await supabase.from('users').insert([
+                // Using supabaseClient instead of supabase
+                const { error } = await supabaseClient.from('users').insert([
                     { name: name, email: email, password_hash: pass, status: 'unverified' }
                 ]);
 
@@ -253,7 +257,7 @@
             const otp = document.getElementById('regOtp').value;
 
             try {
-                const { data: isValid, error } = await supabase.rpc('verify_user_otp', {
+                const { data: isValid, error } = await supabaseClient.rpc('verify_user_otp', {
                     user_email: email, entered_otp: otp
                 });
 
@@ -277,10 +281,10 @@
             const pass = document.getElementById('loginPass').value;
 
             if(!email || !pass) { alert("Enter email and password."); return; }
-            setLoading('loginBtn', true, 'Log In');
+            setLoading('loginBtn', true, 'Logging In...');
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('users')
                     .select('id, name, status')
                     .eq('email', email)
@@ -295,13 +299,12 @@
                 localStorage.setItem('tingo_user_id', data.id);
                 localStorage.setItem('tingo_user_name', data.name);
 
-                await supabase.from('users').update({ auth_token: deviceToken }).eq('id', data.id);
+                await supabaseClient.from('users').update({ auth_token: deviceToken }).eq('id', data.id);
 
-                // Initialize Push Notifications
                 await setupPushNotifications(data.id);
 
                 alert('Logged in successfully!');
-                // window.location.href = 'dashboard.html'; // Uncomment when dashboard is ready
+                window.location.href = 'dashboard.html'; 
                 
             } catch (err) {
                 console.error("Login Error:", err);
@@ -313,27 +316,25 @@
 
         async function setupPushNotifications(userId) {
             try {
-                await OneSignal.Slidedown.promptPush();
-                const onesignalId = OneSignal.User.PushSubscription.id;
+                await window.OneSignal.Slidedown.promptPush();
+                const onesignalId = window.OneSignal.User.PushSubscription.id;
                 
                 if (onesignalId) {
-                    await supabase.from('users').update({ onesignal_id: onesignalId }).eq('id', userId);
+                    await supabaseClient.from('users').update({ onesignal_id: onesignalId }).eq('id', userId);
                 }
             } catch (err) {
                 console.error("OneSignal setup failed:", err);
-                // We don't alert the user here, just log it so login isn't interrupted
             }
         }
 
-        // --- FORGOT PASSWORD FLOW (Fixed) ---
+        // --- FORGOT PASSWORD FLOW ---
         async function forgotPassword() {
             const email = document.getElementById('forgotEmail').value;
             if(!email) { alert("Enter your email address."); return; }
-            setLoading('forgotBtn', true, 'Send Reset Link');
+            setLoading('forgotBtn', true, 'Sending...');
 
             try {
-                // 1. Fetch the user's ID first
-                const { data: userData, error: userError } = await supabase
+                const { data: userData, error: userError } = await supabaseClient
                     .from('users')
                     .select('id')
                     .eq('email', email)
@@ -341,8 +342,7 @@
 
                 if (userError || !userData) throw new Error("Email not found in our system.");
 
-                // 2. Insert the notification using the valid user_id
-                const { error: notifyError } = await supabase.from('email_notifications').insert([{
+                const { error: notifyError } = await supabaseClient.from('email_notifications').insert([{
                     user_id: userData.id,
                     recipient_email: email,
                     subject: "Reset your TingoRooms Password",
