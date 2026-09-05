@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TingoRooms | Authentication</title>
+    
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- OneSignal Web SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
+    <!-- Global Config -->
+    <script src="config.js"></script>
+
+    <style>
+        :root {
+            --primary: #064e3b; /* Deep Green */
+            --primary-hover: #065f46;
+            --accent: #10b981;
+            --bg: #f4f4f5;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .auth-container {
+            background: var(--surface);
+            width: 100%;
+            max-width: 420px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            padding: 40px 30px;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { font-size: 1.5rem; margin-bottom: 10px; color: var(--text-dark); }
+        p.subtitle { color: var(--text-light); font-size: 0.9rem; margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus { border-color: var(--accent); }
+
+        .btn-full {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-full:hover { background: var(--primary-hover); }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        .links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="logo">TingoRooms.</div>
+
+        <!-- LOGIN VIEW -->
+        <div id="view-login" class="view-section active">
+            <h2>Welcome back</h2>
+            <p class="subtitle">Log in to manage your spaces and messages.</p>
+            
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+                <input type="password" id="loginPass" placeholder="Password">
+            </div>
+            <div style="text-align: right; margin-bottom: 15px; font-size: 0.85rem;">
+                <a onclick="switchView('view-forgot')" style="color: var(--text-light); cursor: pointer;">Forgot password?</a>
+            </div>
+            
+            <button class="btn-full" onclick="loginUser()">Log In</button>
+            
+            <div class="links">
+                Don't have an account? <a onclick="switchView('view-register')">Sign up</a>
+            </div>
+        </div>
+
+        <!-- REGISTER VIEW (Step 1) -->
+        <div id="view-register" class="view-section">
+            <h2>Create an account</h2>
+            <p class="subtitle">Join the premium room marketplace.</p>
+            
+            <div class="input-group">
+                <input type="text" id="regName" placeholder="Full Name">
+            </div>
+            <div class="input-group">
+                <input type="email" id="regEmail" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+                <input type="password" id="regPass" placeholder="Create Password">
+            </div>
+            
+            <button class="btn-full" onclick="submitRegistration()">Send OTP</button>
+            
+            <div class="links">
+                Already have an account? <a onclick="switchView('view-login')">Log in</a>
+            </div>
+        </div>
+
+        <!-- OTP VERIFICATION VIEW (Step 2) -->
+        <div id="view-otp" class="view-section">
+            <h2>Verify your email</h2>
+            <p class="subtitle">We sent a 6-digit code to your email.</p>
+            
+            <div class="input-group">
+                <input type="text" id="regOtp" placeholder="Enter 6-digit OTP" maxlength="6" style="letter-spacing: 5px; text-align: center; font-size: 1.25rem; font-weight: bold;">
+            </div>
+            
+            <button class="btn-full" onclick="verifyOTP()">Verify Account</button>
+        </div>
+
+        <!-- FORGOT PASSWORD VIEW -->
+        <div id="view-forgot" class="view-section">
+            <h2>Reset Password</h2>
+            <p class="subtitle">Enter your email to receive a reset link.</p>
+            
+            <div class="input-group">
+                <input type="email" id="forgotEmail" placeholder="Email Address">
+            </div>
+            
+            <button class="btn-full" onclick="forgotPassword()">Send Reset Link</button>
+            
+            <div class="links">
+                Remember your password? <a onclick="switchView('view-login')">Log in</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // 1. Initialize Supabase using the global config file
+        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+        // 2. Initialize OneSignal
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: CONFIG.ONESIGNAL_APP_ID,
+                notifyButton: { enable: true } // Adds a bell icon if user blocks native prompt
+            });
+        });
+
+        // --- UI Navigation ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        // --- REGISTRATION FLOW ---
+        async function submitRegistration() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+
+            if(!name || !email || !pass) { alert("Please fill all fields."); return; }
+
+            // Insert into Users table (Triggers backend OTP generation)
+            const { error } = await supabase.from('users').insert([
+                { name: name, email: email, password_hash: pass, status: 'unverified' }
+            ]);
+
+            if (error) { 
+                alert('Error: ' + error.message); 
+                return; 
+            }
+            switchView('view-otp');
+        }
+
+        async function verifyOTP() {
+            const email = document.getElementById('regEmail').value;
+            const otp = document.getElementById('regOtp').value;
+
+            const { data: isValid, error } = await supabase.rpc('verify_user_otp', {
+                user_email: email, entered_otp: otp
+            });
+
+            if (isValid) {
+                alert("Account verified! You can now log in.");
+                switchView('view-login');
+            } else {
+                alert("Invalid or Expired OTP.");
+            }
+        }
+
+        // --- LOGIN & ONESIGNAL FLOW ---
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+
+            // Authenticate
+            const { data, error } = await supabase
+                .from('users')
+                .select('id, name, status')
+                .eq('email', email)
+                .eq('password_hash', pass)
+                .single();
+
+            if (error || !data) { 
+                alert('Invalid credentials.'); 
+                return; 
+            }
+            if (data.status === 'unverified') {
+                alert('Please verify your account first.');
+                return;
+            }
+
+            // Generate Device Token for Single-Device constraint
+            const deviceToken = 'dev_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('tingo_session_token', deviceToken);
+            localStorage.setItem('tingo_user_id', data.id);
+
+            // Update Auth Token in Supabase
+            await supabase.from('users').update({ auth_token: deviceToken }).eq('id', data.id);
+
+            // Setup Push Notifications & Capture ID
+            await setupPushNotifications(data.id);
+
+            alert('Logged in successfully!');
+            window.location.href = 'dashboard.html'; // Redirect to user dashboard
+        }
+
+        async function setupPushNotifications(userId) {
+            // Prompt the user to allow notifications
+            await OneSignal.Slidedown.promptPush();
+            
+            // Fetch the unique device/browser ID generated by OneSignal
+            const onesignalId = OneSignal.User.PushSubscription.id;
+            
+            if (onesignalId) {
+                // Save this ID to the user's profile in Supabase
+                await supabase
+                    .from('users')
+                    .update({ onesignal_id: onesignalId })
+                    .eq('id', userId);
+                console.log("OneSignal ID synced with database.");
+            }
+        }
+
+        // --- FORGOT PASSWORD FLOW ---
+        async function forgotPassword() {
+            const email = document.getElementById('forgotEmail').value;
+            if(!email) { alert("Enter your email address."); return; }
+
+            // Insert a row into the email_notifications table to trigger Apps Script via Webhook
+            const { error } = await supabase.from('email_notifications').insert([{
+                recipient_email: email,
+                subject: "Reset your TingoRooms Password",
+                template_name: "password_reset",
+                body: `<p>Click here to reset your password: <a href="https://yourgithubpagesurl.com/reset.html?email=${email}">Reset Password</a></p>`,
+                status: 'pending'
+            }]);
+
+            if (error) {
+                alert("Error sending reset link.");
+            } else {
+                alert("If this email exists, a reset link has been sent.");
+                switchView('view-login');
+            }
+        }
+    </script>
+</body>
+</html>
