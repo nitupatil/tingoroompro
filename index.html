@@ -1,435 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>TingoRooms — Find Your Perfect Room</title>
-  <meta name="description" content="Find rooms, PGs and rental properties near you with TingoRooms.">
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Inter, Arial, sans-serif;
-      background: #fafafa;
-      color: #171717;
-    }
-
-    /* HEADER */
-    header {
-      height: 70px;
-      background: white;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 7%;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .logo {
-      font-size: 25px;
-      font-weight: 800;
-      color: #e53935;
-    }
-
-    nav {
-      display: flex;
-      gap: 28px;
-      align-items: center;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: #444;
-      font-size: 14px;
-    }
-
-    .login {
-      padding: 10px 18px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-
-    /* HERO */
-    .hero {
-      min-height: 500px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 60px 20px;
-      background:
-        linear-gradient(rgba(255,255,255,.94), rgba(255,255,255,.94)),
-        radial-gradient(circle at top right, #ffd7d7, transparent 40%);
-    }
-
-    .hero-content {
-      max-width: 800px;
-    }
-
-    .hero h1 {
-      font-size: clamp(40px, 7vw, 72px);
-      line-height: 1.05;
-      font-weight: 850;
-      margin-bottom: 20px;
-    }
-
-    .hero h1 span {
-      color: #e53935;
-    }
-
-    .hero p {
-      color: #666;
-      font-size: 18px;
-      margin-bottom: 35px;
-    }
-
-    /* SEARCH */
-    .search-box {
-      background: white;
-      padding: 10px;
-      border-radius: 14px;
-      display: flex;
-      max-width: 650px;
-      margin: auto;
-      box-shadow: 0 12px 35px rgba(0,0,0,.1);
-      border: 1px solid #eee;
-    }
-
-    .search-box input {
-      flex: 1;
-      border: none;
-      outline: none;
-      padding: 15px;
-      font-size: 15px;
-    }
-
-    .search-btn {
-      border: none;
-      background: #e53935;
-      color: white;
-      padding: 0 25px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    /* FEATURES */
-    .section {
-      padding: 70px 7%;
-    }
-
-    .section-title {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .section-title h2 {
-      font-size: 34px;
-      margin-bottom: 8px;
-    }
-
-    .section-title p {
-      color: #777;
-    }
-
-    .features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    .feature {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      border: 1px solid #eee;
-      transition: .25s;
-    }
-
-    .feature:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(0,0,0,.08);
-    }
-
-    .icon {
-      width: 48px;
-      height: 48px;
-      background: #fff0f0;
-      color: #e53935;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 23px;
-      margin-bottom: 18px;
-    }
-
-    .feature h3 {
-      margin-bottom: 10px;
-    }
-
-    .feature p {
-      color: #777;
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    /* CTA */
-    .cta {
-      margin: 20px 7% 70px;
-      padding: 60px 30px;
-      text-align: center;
-      background: #e53935;
-      color: white;
-      border-radius: 22px;
-    }
-
-    .cta h2 {
-      font-size: 36px;
-      margin-bottom: 12px;
-    }
-
-    .cta p {
-      opacity: .9;
-      margin-bottom: 25px;
-    }
-
-    .cta button {
-      border: none;
-      background: white;
-      color: #e53935;
-      padding: 13px 25px;
-      border-radius: 9px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* FOOTER */
-    footer {
-      background: #111;
-      color: #aaa;
-      padding: 30px 7%;
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-    }
-
-    /* MOBILE */
-    @media (max-width: 700px) {
-
-      header {
-        padding: 0 20px;
-      }
-
-      nav a:not(.login) {
-        display: none;
-      }
-
-      .hero {
-        min-height: 520px;
-      }
-
-      .hero p {
-        font-size: 16px;
-      }
-
-      .search-box {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .search-btn {
-        height: 48px;
-      }
-
-      .features {
-        grid-template-columns: 1fr;
-      }
-
-      .section {
-        padding: 50px 20px;
-      }
-
-      .cta {
-        margin: 10px 20px 50px;
-      }
-
-      footer {
-        flex-direction: column;
-        gap: 10px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- HEADER -->
-  <header>
-    <div class="logo">TingoRooms</div>
-
-    <nav>
-      <a href="#">Home</a>
-      <a href="#">Find Rooms</a>
-      <a href="#">Post a Room</a>
-      <a href="#" class="login">Login</a>
-    </nav>
-  </header>
-
-
-  <!-- HERO -->
-  <section class="hero">
-
-    <div class="hero-content">
-
-      <h1>
-        Find a place<br>
-        you can call <span>home.</span>
-      </h1>
-
-      <p>
-        Discover rooms, PGs and rental spaces near you.
-        Simple. Fast. Local.
-      </p>
-
-      <div class="search-box">
-
-        <input
-          type="text"
-          placeholder="Search city, area or location..."
-        >
-
-        <button class="search-btn">
-          Search
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- FEATURES -->
-  <section class="section">
-
-    <div class="section-title">
-      <h2>Everything you need</h2>
-      <p>Finding your next room shouldn't be complicated.</p>
-    </div>
-
-    <div class="features">
-
-      <div class="feature">
-
-        <div class="icon">⌖</div>
-
-        <h3>Find Nearby</h3>
-
-        <p>
-          Search rooms and PGs around your preferred
-          location and discover places close to you.
-        </p>
-
-      </div>
-
-
-      <div class="feature">
-
-        <div class="icon">⌂</div>
-
-        <h3>Real Listings</h3>
-
-        <p>
-          Explore rooms posted by owners and
-          property managers.
-        </p>
-
-      </div>
-
-
-      <div class="feature">
-
-        <div class="icon">＋</div>
-
-        <h3>Post Your Room</h3>
-
-        <p>
-          Have an empty room? List it on TingoRooms
-          and find your next tenant.
-        </p>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- CTA -->
-  <section class="cta">
-
-    <h2>Have a room to rent?</h2>
-
-    <p>
-      List your property and connect with people
-      looking for a place.
-    </p>
-
-    <button>
-      Post a Room
-    </button>
-
-  </section>
-
-
-  <!-- FOOTER -->
-  <footer>
-
-    <div>
-      © 2026 TingoRooms.com
-    </div>
-
-    <div>
-      Find • List • Connect
-    </div>
-
-  </footer>
-
-
-  <script>
-
-    document
-      .querySelector(".search-btn")
-      .addEventListener("click", function () {
-
-        const location =
-          document.querySelector(".search-box input").value.trim();
-
-        if (!location) {
-          alert("Please enter a location.");
-          return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TingoRooms | Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <style>
+        :root {
+            --primary: #dc2626; /* Red */
+            --bg: #000000; /* Pure Black */
+            --surface: #121212; /* Dark Grey Surface */
+            --surface-light: #262626;
+            --text-main: #ffffff; /* White */
+            --text-muted: #a3a3a3; /* Light Grey */
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --nav-height: 65px;
         }
 
-        // Later connect this to your rooms listing page
-        window.location.href =
-          "rooms.html?location=" +
-          encodeURIComponent(location);
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding-bottom: calc(var(--nav-height) + 20px); /* Space for bottom nav */
+        }
 
-      });
+        /* Top Header & Search */
+        header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            z-index: 100;
+            border-bottom: 1px solid var(--surface-light);
+        }
 
-  </script>
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
 
+        .logo { font-size: 1.5rem; font-weight: 800; }
+        .logo span { color: var(--primary); }
+
+        /* Search Autocomplete */
+        .search-wrapper { position: relative; }
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--surface);
+            border: 1px solid var(--surface-light);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-input:focus { border-color: var(--primary); }
+        
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--surface-light);
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 101;
+            box-shadow: var(--shadow);
+        }
+        .suggestion-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--surface-light);
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .suggestion-item:hover { background-color: var(--surface-light); color: white; }
+
+        /* Listings Feed */
+        .feed-container { padding: 20px; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-muted); }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--surface-light);
+        }
+        .card-img {
+            width: 100%;
+            height: 200px;
+            background-color: var(--surface-light);
+            object-fit: cover;
+        }
+        .card-body { padding: 15px; }
+        .card-price { color: var(--text-main); font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
+        .card-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 8px; }
+        .card-meta { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+        .dist-badge { background: rgba(220, 38, 38, 0.15); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+
+        /* Bottom App Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background-color: var(--surface);
+            border-top: 1px solid var(--surface-light);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+        .nav-item {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 25%;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
+        
+        .add-post-btn {
+            background-color: var(--primary);
+            color: white !important;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            transform: translateY(-10px); /* Pops up slightly */
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4);
+        }
+
+        .loading-text { text-align: center; color: var(--text-muted); padding: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <div class="logo">Tingo<span>Rooms.</span></div>
+            <div id="user-greeting" style="font-size: 0.9rem; color: var(--text-muted);"></div>
+        </div>
+        
+        <!-- Search with Autocomplete -->
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search areas, cities..." autocomplete="off">
+            <div id="suggestionsBox" class="suggestions-box"></div>
+        </div>
+    </header>
+
+    <main class="feed-container">
+        <div class="section-title" id="feed-title">Nearby Rooms</div>
+        <div id="listings-wrapper">
+            <div class="loading-text">Finding rooms near you...</div>
+        </div>
+    </main>
+
+    <!-- App Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            Home
+        </a>
+        <a href="map.html" class="nav-item">
+            <span class="nav-icon">🗺️</span>
+            Map
+        </a>
+        <a href="post.html" class="nav-item add-post-btn">
+            +
+        </a>
+        <a href="chat.html" class="nav-item">
+            <span class="nav-icon">💬</span>
+            Chat
+        </a>
+        <a href="auth.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            Account
+        </a>
+    </nav>
+
+    <script>
+        if (typeof CONFIG === 'undefined') alert("Configuration file missing.");
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+        let userLat = null;
+        let userLon = null;
+        let allPosts = [];
+
+        // 1. Session Enforcement
+        async function checkSession() {
+            const userId = localStorage.getItem('tingo_user_id');
+            const sessionToken = localStorage.getItem('tingo_session_token');
+            const userName = localStorage.getItem('tingo_user_name');
+
+            if (!userId || !sessionToken) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            document.getElementById('user-greeting').innerText = `Hi, ${userName.split(' ')[0]}`;
+
+            // Check if logged in on another device
+            const { data, error } = await supabaseClient.from('users').select('auth_token').eq('id', userId).single();
+            if (error || data.auth_token !== sessionToken) {
+                alert("Session expired or logged in on another device.");
+                localStorage.clear();
+                window.location.href = 'auth.html';
+            }
+        }
+
+        // 2. Location & Haversine Distance Formula
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLat = position.coords.latitude;
+                        userLon = position.coords.longitude;
+                        fetchListings(); // Fetch listings once we have location
+                    },
+                    (error) => {
+                        console.warn("Location denied. Showing default feed.");
+                        fetchListings(); // Fetch anyway without distance sorting
+                    },
+                    { enableHighAccuracy: false, timeout: 5000 }
+                );
+            } else {
+                fetchListings();
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+            const R = 6371; // Earth radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(1); // Return km with 1 decimal
+        }
+
+        // 3. Fetch Listings from Supabase
+        async function fetchListings() {
+            const { data, error } = await supabaseClient
+                .from('posts')
+                .select('*')
+                .eq('status', 'approved');
+
+            if (error) {
+                document.getElementById('listings-wrapper').innerHTML = `<div class="loading-text">Error loading rooms.</div>`;
+                return;
+            }
+
+            allPosts = data;
+            renderListings(allPosts);
+        }
+
+        function renderListings(postsToRender) {
+            const wrapper = document.getElementById('listings-wrapper');
+            wrapper.innerHTML = '';
+
+            if (postsToRender.length === 0) {
+                wrapper.innerHTML = `<div class="loading-text">No rooms found.</div>`;
+                return;
+            }
+
+            // Calculate distance and sort if user location is known
+            if (userLat && userLon) {
+                postsToRender.forEach(post => {
+                    post.distance = calculateDistance(userLat, userLon, post.latitude, post.longitude);
+                });
+                // Sort by closest first
+                postsToRender.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+            }
+
+            postsToRender.forEach(post => {
+                const imgUrl = (post.image_urls && post.image_urls.length > 0) ? post.image_urls[0] : 'https://via.placeholder.com/400x200?text=No+Image';
+                const distHtml = post.distance ? `<span class="dist-badge">${post.distance} km away</span>` : '';
+                
+                const card = `
+                    <div class="card" onclick="window.location.href='post-detail.html?id=${post.id}'">
+                        <img src="${imgUrl}" class="card-img" alt="${post.title}">
+                        <div class="card-body">
+                            <div class="card-price">₹${post.rent_amount.toLocaleString()}/mo</div>
+                            <div class="card-title">${post.title}</div>
+                            <div class="card-meta">
+                                <span>📍 ${post.location}</span>
+                                ${distHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                wrapper.innerHTML += card;
+            });
+        }
+
+        // 4. OpenStreetMap Nominatim Autocomplete
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value;
+            
+            if (query.length < 3) {
+                suggestionsBox.style.display = 'none';
+                if(query.length === 0) renderListings(allPosts); // Reset feed if cleared
+                return;
+            }
+
+            // Debounce API calls to prevent rate limiting
+            searchTimeout = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                .then(res => res.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(place => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            // Clean up display name (just show area and city)
+                            const nameParts = place.display_name.split(',');
+                            div.innerText = `${nameParts[0]}, ${nameParts[1] || ''}`.trim();
+                            
+                            // On Click Suggestion
+                            div.onclick = () => {
+                                searchInput.value = div.innerText;
+                                suggestionsBox.style.display = 'none';
+                                
+                                // Update "user location" to the searched location and re-render
+                                userLat = parseFloat(place.lat);
+                                userLon = parseFloat(place.lon);
+                                document.getElementById('feed-title').innerText = `Rooms near ${div.innerText}`;
+                                renderListings(allPosts); 
+                            };
+                            suggestionsBox.appendChild(div);
+                        });
+                        suggestionsBox.style.display = 'block';
+                    }
+                });
+            }, 500);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Initialize App
+        window.onload = () => {
+            checkSession();
+            getUserLocation(); // Prompts for location and fetches posts
+        };
+    </script>
 </body>
 </html>
