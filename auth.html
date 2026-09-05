@@ -14,20 +14,19 @@
     <!-- OneSignal Web SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     
-    <!-- Global Config (Ensure config.js exists in the same folder) -->
+    <!-- Global Config -->
     <script src="config.js"></script>
 
     <style>
         :root {
-            --primary: #064e3b;
-            --primary-hover: #065f46;
-            --accent: #10b981;
-            --bg: #f4f4f5;
-            --surface: #ffffff;
-            --text-dark: #0f172a;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --primary: #dc2626; /* Vibrant Red */
+            --primary-hover: #b91c1c; /* Darker Red */
+            --bg: #0a0a0a; /* Almost Black Background */
+            --surface: #ffffff; /* White Form Surface */
+            --text-dark: #000000; /* Pure Black Text */
+            --text-light: #525252; /* Dark Grey for subtitles */
+            --border: #d4d4d8;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -45,48 +44,76 @@
         .auth-container {
             background: var(--surface);
             width: 100%;
-            max-width: 420px;
-            border-radius: 16px;
+            max-width: 450px;
+            border-radius: 12px;
             box-shadow: var(--shadow);
             overflow: hidden;
             padding: 40px 30px;
+            border-top: 5px solid var(--primary); /* Red accent line at the top */
         }
 
         .logo {
             text-align: center;
-            font-size: 1.75rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            letter-spacing: -1px;
+        }
+        .logo span {
             color: var(--primary);
-            margin-bottom: 30px;
         }
 
         .view-section {
             display: none;
             animation: fadeIn 0.3s ease;
         }
-        .view-section.active {
-            display: block;
-        }
+        .view-section.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        h2 { font-size: 1.5rem; margin-bottom: 10px; color: var(--text-dark); }
-        p.subtitle { color: var(--text-light); font-size: 0.9rem; margin-bottom: 25px; }
+        h2 { font-size: 1.5rem; margin-bottom: 8px; color: var(--text-dark); font-weight: 700; }
+        p.subtitle { color: var(--text-light); font-size: 0.9rem; margin-bottom: 20px; }
 
         .input-group { margin-bottom: 15px; }
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
-            padding: 14px;
+            padding: 12px 14px;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
             outline: none;
             transition: border-color 0.2s;
+            background-color: #fafafa;
         }
-        .input-group input:focus { border-color: var(--accent); }
+        .input-group input:focus, .input-group select:focus { 
+            border-color: var(--text-dark); 
+            background-color: #ffffff;
+        }
+
+        /* Checkbox styling */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .checkbox-group input {
+            margin-right: 8px;
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .row .input-group { flex: 1; }
 
         .btn-full {
             width: 100%;
@@ -94,7 +121,7 @@
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
@@ -108,20 +135,22 @@
             text-align: center;
             margin-top: 20px;
             font-size: 0.9rem;
+            color: var(--text-light);
         }
         .links a {
-            color: var(--accent);
+            color: var(--text-dark);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
+            transition: color 0.2s;
         }
-        .links a:hover { text-decoration: underline; }
+        .links a:hover { color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="auth-container">
-        <div class="logo">TingoRooms.</div>
+        <div class="logo">Tingo<span>Rooms.</span></div>
 
         <!-- LOGIN VIEW -->
         <div id="view-login" class="view-section active">
@@ -135,7 +164,7 @@
                 <input type="password" id="loginPass" placeholder="Password">
             </div>
             <div style="text-align: right; margin-bottom: 15px; font-size: 0.85rem;">
-                <a onclick="switchView('view-forgot')" style="color: var(--text-light); cursor: pointer;">Forgot password?</a>
+                <a onclick="switchView('view-forgot')" style="color: var(--text-light); cursor: pointer; font-weight: 500;">Forgot password?</a>
             </div>
             
             <button class="btn-full" id="loginBtn" onclick="loginUser()">Log In</button>
@@ -153,9 +182,44 @@
             <div class="input-group">
                 <input type="text" id="regName" placeholder="Full Name">
             </div>
-            <div class="input-group">
-                <input type="email" id="regEmail" placeholder="Email Address">
+            
+            <div class="row">
+                <div class="input-group">
+                    <input type="email" id="regEmail" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <select id="regGender">
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
             </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <input type="tel" id="regMobile" placeholder="Mobile Number" maxlength="10">
+                </div>
+                <div class="input-group" id="wpInputContainer">
+                    <input type="tel" id="regWhatsapp" placeholder="WhatsApp Number" maxlength="10">
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="sameAsMobile" onchange="toggleWhatsapp()">
+                <label for="sameAsMobile">WhatsApp number is the same as Mobile</label>
+            </div>
+
+            <div class="input-group">
+                <select id="regAvatar">
+                    <option value="" selected>Choose an Avatar (Optional)</option>
+                    <!-- These UUIDs match the dummy avatars in your database -->
+                    <option value="dddddddd-1111-1111-1111-111111111111">Avatar 1 (Male)</option>
+                    <option value="dddddddd-2222-2222-2222-222222222222">Avatar 2 (Female)</option>
+                </select>
+            </div>
+
             <div class="input-group">
                 <input type="password" id="regPass" placeholder="Create Password">
             </div>
@@ -203,10 +267,8 @@
             alert("Configuration file (config.js) is missing. Features will not work.");
         }
 
-        // Fix: Renamed variable to supabaseClient to prevent naming collision with the CDN
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-        // OneSignal Initialization
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.init({
@@ -215,7 +277,6 @@
             });
         });
 
-        // --- UI Navigation ---
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -227,19 +288,51 @@
             btn.innerText = isLoading ? "Processing..." : text;
         }
 
+        // Handle WhatsApp Checkbox Toggle
+        function toggleWhatsapp() {
+            const isChecked = document.getElementById('sameAsMobile').checked;
+            const wpContainer = document.getElementById('wpInputContainer');
+            if (isChecked) {
+                wpContainer.style.display = 'none';
+                document.getElementById('regWhatsapp').value = ''; // Clear it out visually
+            } else {
+                wpContainer.style.display = 'block';
+            }
+        }
+
         // --- REGISTRATION FLOW ---
         async function submitRegistration() {
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
+            const gender = document.getElementById('regGender').value;
+            const mobile = document.getElementById('regMobile').value;
+            const isSameAsMobile = document.getElementById('sameAsMobile').checked;
+            const whatsapp = isSameAsMobile ? mobile : document.getElementById('regWhatsapp').value;
+            let avatar = document.getElementById('regAvatar').value;
             const pass = document.getElementById('regPass').value;
 
-            if(!name || !email || !pass) { alert("Please fill all fields."); return; }
+            if(!name || !email || !mobile || !gender || !pass) { 
+                alert("Please fill all required fields."); 
+                return; 
+            }
+
+            // If avatar is empty string, set it to null so DB accepts it
+            if (avatar === "") avatar = null;
+
             setLoading('regBtn', true, 'Sending...');
 
             try {
-                // Using supabaseClient instead of supabase
                 const { error } = await supabaseClient.from('users').insert([
-                    { name: name, email: email, password_hash: pass, status: 'unverified' }
+                    { 
+                        name: name, 
+                        email: email, 
+                        gender: gender,
+                        mobile_no: mobile,
+                        whatsapp_no: whatsapp,
+                        avatar_id: avatar,
+                        password_hash: pass, 
+                        status: 'unverified' 
+                    }
                 ]);
 
                 if (error) throw error;
@@ -304,7 +397,7 @@
                 await setupPushNotifications(data.id);
 
                 alert('Logged in successfully!');
-                window.location.href = 'dashboard.html'; 
+                window.location.href = '/dashboard'; 
                 
             } catch (err) {
                 console.error("Login Error:", err);
@@ -342,12 +435,14 @@
 
                 if (userError || !userData) throw new Error("Email not found in our system.");
 
+                const resetUrl = `${window.location.origin}/reset?email=${encodeURIComponent(email)}`;
+
                 const { error: notifyError } = await supabaseClient.from('email_notifications').insert([{
                     user_id: userData.id,
                     recipient_email: email,
                     subject: "Reset your TingoRooms Password",
                     template_name: "password_reset",
-                    body: `<p>Click here to reset your password: <a href="https://yourgithubpagesurl.com/reset.html?email=${email}">Reset Password</a></p>`,
+                    body: `<p>Click here to reset your password: <a href="${resetUrl}" style="background: #dc2626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>`,
                     status: 'pending'
                 }]);
 
