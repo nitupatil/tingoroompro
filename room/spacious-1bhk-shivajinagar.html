@@ -12,7 +12,6 @@
     <meta property="og:type" content="article">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Use absolute path so it loads properly from inside the /room/ folder -->
     <script src="/config.js"></script>
     <style>
         :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --border: #262626; --text: #ffffff; --muted: #a3a3a3; }
@@ -28,7 +27,8 @@
         .badge-seeking { background:rgba(220,38,38,0.2); color:var(--primary); }
         h1 { font-size:1.8rem; font-weight:800; margin-bottom:10px; line-height:1.3; }
         .price { font-size:1.6rem; color:var(--primary); font-weight:800; margin-bottom:15px; }
-        .meta-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; margin:20px 0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+        .meta-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; margin:20px 0; display:grid; grid-template-columns: 1fr 1fr; gap:15px; }
+        .meta-item { display:flex; flex-direction:column; }
         .desc { font-size:1.05rem; line-height:1.7; color:#d4d4d8; margin:20px 0; white-space:pre-wrap; }
         .action-bar { position:fixed; bottom:0; left:0; width:100%; background:var(--surface); border-top:1px solid var(--border); padding:12px 20px; display:flex; justify-content:space-between; align-items:center; max-width:100%; z-index:100; }
         .btn-msg { background:var(--primary); color:#fff; padding:12px 25px; border-radius:8px; border:none; font-size:1rem; font-weight:700; cursor:pointer; }
@@ -45,8 +45,9 @@
         <h1>Spacious 1BHK in Shivajinagar</h1>
         <div class="price">₹15,000 <span style="font-size:0.9rem; color:var(--muted); font-weight:400;">/ month</span></div>
         <div class="meta-box">
-            <div><span style="color:var(--muted); font-size:0.85rem; display:block;">Location</span><strong>📍 Shivajinagar, Pune</strong></div>
-            <div><span style="color:var(--muted); font-size:0.85rem; display:block;">Deposit</span><strong>₹30,000</strong></div>
+            <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Location</span><strong>📍 Shivajinagar, Pune</strong></div>
+            <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Deposit</span><strong>₹30,000</strong></div>
+            <div class="meta-item" style="grid-column: 1 / -1;"><span style="color:var(--muted); font-size:0.85rem;">Brokerage</span><strong>₹0</strong></div>
         </div>
         <h3 style="margin-bottom:8px;">Description</h3>
         <div class="desc">Well ventilated 1BHK. Perfect for students.</div>
