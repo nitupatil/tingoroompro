@@ -58,6 +58,7 @@
         function openChat(ownerId, postId) {
             const token = localStorage.getItem('tingo_session_token');
             if(!token) {
+                // Save where the user wanted to go so auth can send them back later
                 localStorage.setItem('redirect_after_login', window.location.pathname);
                 window.location.href = '/auth';
                 return;
