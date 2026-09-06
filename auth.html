@@ -12,10 +12,10 @@
 
     <style>
         :root {
-            --primary: #dc2626;
+            --primary: #dc2626; /* Vibrant Red */
             --primary-hover: #b91c1c;
-            --bg: #000000;
-            --surface: #121212;
+            --bg: #000000; /* Pure Black */
+            --surface: #121212; /* Dark Grey Surface */
             --surface-light: #262626;
             --text-main: #ffffff;
             --text-muted: #a3a3a3;
@@ -28,16 +28,43 @@
         body {
             background-color: var(--bg);
             color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- SPLIT LAYOUT (Desktop & Mobile) --- */
+        .split-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Left Side: Hidden on mobile, visible on desktop */
+        .hero-side {
+            display: none; 
+        }
+
+        /* Right Side: Takes full width on mobile */
+        .form-side {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
             padding-bottom: calc(var(--nav-height) + 20px);
-            display: flex; justify-content: center; min-height: 100vh;
         }
 
+        /* Form Container */
         .container {
-            width: 100%; max-width: 450px;
-            padding: 30px 20px;
+            width: 100%; 
+            max-width: 420px;
+            background: var(--surface);
+            padding: 40px 30px;
+            border-radius: 12px;
+            border-top: 4px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .logo { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 25px; letter-spacing: -1px; }
+        .logo { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 25px; letter-spacing: -1px; cursor: pointer; }
         .logo span { color: var(--primary); }
 
         .view-section { display: none; animation: fadeIn 0.3s ease; }
@@ -52,10 +79,16 @@
         .input-group input, .input-group select {
             width: 100%; padding: 12px 14px; border: 1px solid var(--border);
             border-radius: 6px; font-size: 0.95rem; outline: none;
-            background-color: var(--surface); color: white; transition: border-color 0.2s;
+            background-color: var(--bg); color: white; transition: border-color 0.2s;
         }
-        .input-group input:focus { border-color: var(--primary); }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary); }
         .input-group input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .row { display: flex; gap: 15px; }
+        .row .input-group { flex: 1; }
+
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted); }
+        .checkbox-group input { margin-right: 8px; accent-color: var(--primary); width: 16px; height: 16px; }
 
         .btn-full {
             width: 100%; padding: 14px; background: var(--primary); color: white;
@@ -68,13 +101,14 @@
 
         .links { text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted); }
         .links a { color: white; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .links a:hover { color: var(--primary); }
 
         /* Profile Specific UI */
         .profile-header { text-align: center; margin-bottom: 30px; }
-        .avatar-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 15px; background: var(--surface-light); }
+        .avatar-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; background: var(--bg); }
         .section-divider { height: 1px; background: var(--border); margin: 30px 0; }
 
-        /* Bottom App Navigation */
+        /* Bottom App Navigation (Mobile Only) */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height);
             background-color: var(--surface); border-top: 1px solid var(--border);
@@ -84,60 +118,168 @@
         .nav-item.active { color: var(--primary); }
         .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
         .add-post-btn { background-color: var(--primary); color: white !important; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; transform: translateY(-10px); box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); }
+
+        /* --- DESKTOP INSTAGRAM STYLE --- */
+        @media (min-width: 850px) {
+            .hero-side {
+                display: flex;
+                flex: 1.2; /* Takes up 55% of the screen */
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1920&q=80') center/cover;
+                text-align: center;
+                padding: 40px;
+                border-right: 1px solid var(--border);
+            }
+            .hero-side h1 { font-size: 4rem; font-weight: 800; letter-spacing: -2px; margin-bottom: 15px; }
+            .hero-side span { color: var(--primary); }
+            .hero-side p { font-size: 1.2rem; color: #d4d4d8; max-width: 400px; line-height: 1.6; }
+            
+            .form-side {
+                padding-bottom: 20px; /* Remove mobile nav spacing */
+            }
+            .bottom-nav {
+                display: none; /* Hide bottom nav on desktop */
+            }
+            .container {
+                border-top: none; /* Cleaner look on desktop */
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="logo">Tingo<span>Rooms.</span></div>
-
-        <!-- PROFILE VIEW (Authenticated) -->
-        <div id="view-profile" class="view-section">
-            <div class="profile-header">
-                <img id="profAvatar" src="" class="avatar-img">
-                <h2 id="profNameDisplay">Loading...</h2>
-            </div>
-
-            <div class="input-group">
-                <label>Email Address</label>
-                <input type="email" id="profEmail" disabled>
-            </div>
-            <div class="input-group">
-                <label>Full Name</label>
-                <input type="text" id="profName">
-            </div>
-            <div class="input-group">
-                <label>Mobile Number</label>
-                <input type="text" id="profMobile">
-            </div>
-            <button class="btn-full" id="updateBtn" onclick="updateProfile()">Update Information</button>
-
-            <div class="section-divider"></div>
-
-            <h2>Security</h2>
-            <div class="input-group"><input type="password" id="oldPass" placeholder="Current Password"></div>
-            <div class="input-group"><input type="password" id="newPass" placeholder="New Password"></div>
-            <button class="btn-full" style="background: var(--surface-light);" onclick="changePassword()">Change Password</button>
-
-            <button class="btn-full btn-outline" style="color: var(--primary); border-color: var(--primary);" onclick="logout()">Log Out</button>
+    <div class="split-layout">
+        
+        <!-- Desktop Hero Image (Left Side) -->
+        <div class="hero-side">
+            <h1>Tingo<span>Rooms.</span></h1>
+            <p>The premium marketplace for verified rooms and reliable roommates. Join the community today.</p>
         </div>
 
-        <!-- LOGIN VIEW (Unauthenticated) -->
-        <div id="view-login" class="view-section">
-            <h2>Welcome back</h2>
-            <p class="subtitle">Log in to manage your spaces and messages.</p>
-            <div class="input-group"><input type="email" id="loginEmail" placeholder="Email Address"></div>
-            <div class="input-group"><input type="password" id="loginPass" placeholder="Password"></div>
-            <button class="btn-full" id="loginBtn" onclick="loginUser()">Log In</button>
-            <div class="links">Don't have an account? <a onclick="switchView('view-register')">Sign up</a></div>
+        <!-- Authentication Panel (Right Side / Center Mobile) -->
+        <div class="form-side">
+            <div class="container">
+                <div class="logo" onclick="window.location.href='/index.html'">Tingo<span>Rooms.</span></div>
+
+                <!-- 1. PROFILE VIEW (Authenticated) -->
+                <div id="view-profile" class="view-section">
+                    <div class="profile-header">
+                        <img id="profAvatar" src="" class="avatar-img">
+                        <h2 id="profNameDisplay">Loading...</h2>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="profEmail" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="profName">
+                    </div>
+                    <div class="input-group">
+                        <label>Mobile Number</label>
+                        <input type="text" id="profMobile">
+                    </div>
+                    <button class="btn-full" id="updateBtn" onclick="updateProfile()">Update Information</button>
+
+                    <div class="section-divider"></div>
+
+                    <h2>Security</h2>
+                    <div class="input-group"><input type="password" id="oldPass" placeholder="Current Password"></div>
+                    <div class="input-group"><input type="password" id="newPass" placeholder="New Password"></div>
+                    <button class="btn-full" style="background: var(--surface-light);" onclick="changePassword()">Change Password</button>
+
+                    <button class="btn-full btn-outline" style="color: var(--primary); border-color: var(--primary);" onclick="logout()">Log Out</button>
+                </div>
+
+                <!-- 2. LOGIN VIEW (Unauthenticated) -->
+                <div id="view-login" class="view-section active">
+                    <h2>Welcome back</h2>
+                    <p class="subtitle">Log in to manage your spaces and messages.</p>
+                    <div class="input-group"><input type="email" id="loginEmail" placeholder="Email Address"></div>
+                    <div class="input-group"><input type="password" id="loginPass" placeholder="Password"></div>
+                    <div style="text-align: right; margin-bottom: 15px; font-size: 0.85rem;">
+                        <a onclick="switchView('view-forgot')" style="color: var(--text-muted); cursor: pointer;">Forgot password?</a>
+                    </div>
+                    <button class="btn-full" id="loginBtn" onclick="loginUser()">Log In</button>
+                    <div class="links">Don't have an account? <a onclick="switchView('view-register')">Sign up</a></div>
+                </div>
+
+                <!-- 3. REGISTER VIEW -->
+                <div id="view-register" class="view-section">
+                    <h2>Create an account</h2>
+                    <p class="subtitle">Join the premium room marketplace.</p>
+                    <div class="input-group"><input type="text" id="regName" placeholder="Full Name"></div>
+                    <div class="row">
+                        <div class="input-group"><input type="email" id="regEmail" placeholder="Email Address"></div>
+                        <div class="input-group">
+                            <select id="regGender">
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-group"><input type="tel" id="regMobile" placeholder="Mobile Number" maxlength="10"></div>
+                        <div class="input-group" id="wpInputContainer"><input type="tel" id="regWhatsapp" placeholder="WhatsApp Number" maxlength="10"></div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="sameAsMobile" onchange="toggleWhatsapp()">
+                        <label for="sameAsMobile">WhatsApp number is same as Mobile</label>
+                    </div>
+                    <div class="input-group">
+                        <select id="regAvatar">
+                            <option value="" selected>Choose an Avatar (Optional)</option>
+                            <option value="dddddddd-1111-1111-1111-111111111111">Avatar 1 (Male)</option>
+                            <option value="dddddddd-2222-2222-2222-222222222222">Avatar 2 (Female)</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><input type="password" id="regPass" placeholder="Create Password"></div>
+                    <button class="btn-full" id="regBtn" onclick="submitRegistration()">Send OTP</button>
+                    <div class="links">Already have an account? <a onclick="switchView('view-login')">Log in</a></div>
+                </div>
+
+                <!-- 4. OTP VERIFICATION VIEW -->
+                <div id="view-otp" class="view-section">
+                    <h2>Verify your email</h2>
+                    <p class="subtitle">We sent a 6-digit code to your email.</p>
+                    <div class="input-group">
+                        <input type="text" id="regOtp" placeholder="Enter 6-digit OTP" maxlength="6" style="letter-spacing: 5px; text-align: center; font-size: 1.25rem; font-weight: bold;">
+                    </div>
+                    <button class="btn-full" onclick="verifyOTP()">Verify Account</button>
+                </div>
+
+                <!-- 5. FORGOT PASSWORD REQUEST VIEW -->
+                <div id="view-forgot" class="view-section">
+                    <h2>Reset Password</h2>
+                    <p class="subtitle">Enter your email to receive a reset code.</p>
+                    <div class="input-group"><input type="email" id="forgotEmail" placeholder="Email Address"></div>
+                    <button class="btn-full" id="forgotBtn" onclick="requestResetOTP()">Send Reset OTP</button>
+                    <div class="links">Remember your password? <a onclick="switchView('view-login')">Log in</a></div>
+                </div>
+
+                <!-- 6. RESET PASSWORD (OTP + NEW PASS) VIEW -->
+                <div id="view-reset" class="view-section">
+                    <h2>Create New Password</h2>
+                    <p class="subtitle">Enter the 6-digit code sent to your email.</p>
+                    <div class="input-group">
+                        <input type="text" id="resetOtp" placeholder="6-digit Reset OTP" maxlength="6" style="letter-spacing: 5px; text-align: center; font-weight: bold;">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="newPass" placeholder="Enter New Password">
+                    </div>
+                    <button class="btn-full" id="resetBtn" onclick="submitNewPassword()">Update Password</button>
+                </div>
+
+            </div>
         </div>
-
-        <!-- Keep your existing Register/OTP/Forgot HTML views here -->
-        <!-- (Omitted for brevity, paste them exactly as they were in the previous version) -->
-
     </div>
 
-    <!-- App Bottom Navigation -->
+    <!-- App Bottom Navigation (Visible on Mobile Only) -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span>Home</a>
         <a href="map.html" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
@@ -146,7 +288,9 @@
         <a href="auth.html" class="nav-item active"><span class="nav-icon">👤</span>Account</a>
     </nav>
 
+    <!-- Logic Script -->
     <script>
+        if (typeof CONFIG === 'undefined') alert("Configuration file (config.js) is missing.");
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
         window.onload = checkSession;
@@ -154,6 +298,25 @@
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
+        }
+
+        function setLoading(btnId, isLoading, text) {
+            const btn = document.getElementById(btnId);
+            if(btn) {
+                btn.disabled = isLoading;
+                btn.innerText = isLoading ? "Processing..." : text;
+            }
+        }
+
+        function toggleWhatsapp() {
+            const isChecked = document.getElementById('sameAsMobile').checked;
+            const wpContainer = document.getElementById('wpInputContainer');
+            if (isChecked) {
+                wpContainer.style.display = 'none';
+                document.getElementById('regWhatsapp').value = '';
+            } else {
+                wpContainer.style.display = 'block';
+            }
         }
 
         // --- SESSION & PROFILE FETCHING ---
@@ -167,12 +330,9 @@
             }
 
             try {
-                // Securely fetch profile using the gatekeeper RPC
                 const { data, error } = await supabaseClient.rpc('get_secure_profile', { uid: uid, d_token: token });
-                
                 if (error) throw error;
 
-                // Populate UI
                 document.getElementById('profNameDisplay').innerText = data.name;
                 document.getElementById('profName').value = data.name;
                 document.getElementById('profEmail').value = data.email;
@@ -181,54 +341,92 @@
                 
                 switchView('view-profile');
             } catch (err) {
-                console.error(err);
-                logout(); // Token invalid, force logout
+                console.error("Session Check Failed:", err);
+                logout(); 
             }
+        }
+
+        // --- REGISTRATION ---
+        async function submitRegistration() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const gender = document.getElementById('regGender').value;
+            const mobile = document.getElementById('regMobile').value;
+            const isSameAsMobile = document.getElementById('sameAsMobile').checked;
+            const whatsapp = isSameAsMobile ? mobile : document.getElementById('regWhatsapp').value;
+            let avatar = document.getElementById('regAvatar').value;
+            const pass = document.getElementById('regPass').value;
+
+            if(!name || !email || !mobile || !gender || !pass) { alert("Please fill all required fields."); return; }
+            if (avatar === "") avatar = null;
+            setLoading('regBtn', true, 'Sending...');
+
+            try {
+                const { error } = await supabaseClient.from('users').insert([
+                    { name: name, email: email, gender: gender, mobile_no: mobile, whatsapp_no: whatsapp, avatar_id: avatar, password_hash: pass, status: 'unverified' }
+                ]);
+                if (error) throw error;
+                switchView('view-otp');
+            } catch (err) { alert('Signup failed: ' + err.message); } 
+            finally { setLoading('regBtn', false, 'Send OTP'); }
+        }
+
+        async function verifyOTP() {
+            const email = document.getElementById('regEmail').value;
+            const otp = document.getElementById('regOtp').value;
+            try {
+                const { data: isValid, error } = await supabaseClient.rpc('verify_user_otp', { user_email: email, entered_otp: otp });
+                if (error) throw error;
+                if (isValid) { alert("Account verified! You can now log in."); switchView('view-login'); } 
+                else { alert("Invalid or Expired OTP."); }
+            } catch (err) { alert("Verification failed: " + err.message); }
         }
 
         // --- SECURE LOGIN ---
         async function loginUser() {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
-            if(!email || !pass) return;
+            if(!email || !pass) return alert("Enter email and password.");
+            setLoading('loginBtn', true, 'Logging In...');
 
             const deviceToken = 'dev_' + Math.random().toString(36).substr(2, 9);
 
             try {
-                // Secure login via RPC (handles password check & token update on backend)
-                const { data, error } = await supabaseClient.rpc('secure_login', { 
-                    user_email: email, user_pass: pass, device_token: deviceToken 
-                });
-
+                const { data, error } = await supabaseClient.rpc('secure_login', { user_email: email, user_pass: pass, device_token: deviceToken });
                 if (error) throw error;
 
                 localStorage.setItem('tingo_session_token', deviceToken);
                 localStorage.setItem('tingo_user_id', data.id);
                 localStorage.setItem('tingo_user_name', data.name);
                 
-                checkSession(); // Load profile view
+                try {
+                    await window.OneSignal.Slidedown.promptPush();
+                    const onesignalId = window.OneSignal.User.PushSubscription.id;
+                    if (onesignalId) await supabaseClient.from('users').update({ onesignal_id: onesignalId }).eq('id', data.id);
+                } catch(e) {}
+
+                checkSession();
             } catch (err) { alert(err.message); }
+            finally { setLoading('loginBtn', false, 'Log In'); }
         }
 
         // --- UPDATE PROFILE ---
         async function updateProfile() {
             const name = document.getElementById('profName').value;
             const mobile = document.getElementById('profMobile').value;
-            
             try {
                 const { data, error } = await supabaseClient.rpc('secure_update_profile', {
                     uid: localStorage.getItem('tingo_user_id'),
                     d_token: localStorage.getItem('tingo_session_token'),
                     new_name: name, new_mobile: mobile
                 });
-
                 if (error || !data) throw new Error("Update failed");
                 alert("Profile updated successfully!");
                 document.getElementById('profNameDisplay').innerText = name;
             } catch (err) { alert(err.message); }
         }
 
-        // --- CHANGE PASSWORD ---
+        // --- CHANGE PASSWORD (LOGGED IN) ---
         async function changePassword() {
             const oldPass = document.getElementById('oldPass').value;
             const newPass = document.getElementById('newPass').value;
@@ -240,12 +438,48 @@
                     d_token: localStorage.getItem('tingo_session_token'),
                     old_pass: oldPass, new_pass: newPass
                 });
-
                 if (error) throw error;
                 alert("Password updated securely!");
                 document.getElementById('oldPass').value = '';
                 document.getElementById('newPass').value = '';
             } catch (err) { alert(err.message); }
+        }
+
+        // --- PASSWORD RESET (LOGGED OUT OTP) ---
+        async function requestResetOTP() {
+            const email = document.getElementById('forgotEmail').value;
+            if(!email) return alert("Enter your email address.");
+            setLoading('forgotBtn', true, 'Sending...');
+
+            try {
+                const { data: emailFound, error } = await supabaseClient.rpc('request_password_reset_otp', { user_email: email });
+                if (error) throw error;
+                if (!emailFound) throw new Error("Email not found.");
+
+                alert("A password reset OTP has been sent to your email.");
+                switchView('view-reset');
+            } catch (err) { alert(err.message); } 
+            finally { setLoading('forgotBtn', false, 'Send Reset OTP'); }
+        }
+
+        async function submitNewPassword() {
+            const email = document.getElementById('forgotEmail').value;
+            const otp = document.getElementById('resetOtp').value;
+            const newPass = document.getElementById('newPass').value;
+            if(!otp || !newPass) return alert("Enter the OTP and your new password.");
+            setLoading('resetBtn', true, 'Updating...');
+
+            try {
+                const { data: isValid, error } = await supabaseClient.rpc('reset_password_with_otp', { 
+                    user_email: email, entered_otp: otp, new_password: newPass 
+                });
+                if (error) throw error;
+                if (!isValid) throw new Error("Invalid or expired OTP.");
+
+                alert("Password successfully updated! You can now log in.");
+                switchView('view-login');
+            } catch (err) { alert(err.message); } 
+            finally { setLoading('resetBtn', false, 'Update Password'); }
         }
 
         function logout() {
