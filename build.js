@@ -1,11 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-
-// 1. Fetch keys directly from your single source of truth (config.js)
 const CONFIG = require('./config.js'); 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-
 const SITE_URL = 'https://www.tingorooms.online';
 
 const escapeAttr = (str) => {
@@ -15,30 +12,16 @@ const escapeAttr = (str) => {
 
 async function buildSite() {
   const rootPath = __dirname;
-
-  // Fetch all approved listings from Supabase
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching posts:', error);
-    process.exit(1);
-  }
-
+  const { data: posts, error } = await supabase.from('posts').select('*').eq('status', 'approved').order('created_at', { ascending: false });
+  if (error) { console.error('Error fetching posts:', error); process.exit(1); }
   const postsData = posts || [];
 
-  // ----------------------------------------------------
-  // 1. GENERATE INDIVIDUAL SEO POST PAGES (Clean URLs)
-  // ----------------------------------------------------
+  // 1. GENERATE INDIVIDUAL POST PAGES (.html in root, clean linked)
   postsData.forEach((post) => {
     const mainImg = (post.image_urls && post.image_urls.length > 0) ? post.image_urls[0] : 'https://placehold.co/800x500/121212/dc2626?text=TingoRooms';
     const cleanTitle = escapeAttr(post.title || `${post.post_type === 'seeking' ? 'Need Room' : 'Room Available'} in ${post.location}`);
     const metaDesc = escapeAttr((post.description || '').slice(0, 160));
 
-    // Notice we use ../config.js and ../chat.html because this file lives inside a folder
     const postHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,7 +36,7 @@ async function buildSite() {
     <meta property="og:type" content="article">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../config.js"></script>
+    <script src="config.js"></script>
     <style>
         :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --border: #262626; --text: #ffffff; --muted: #a3a3a3; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
@@ -76,8 +59,8 @@ async function buildSite() {
 </head>
 <body>
     <header>
-        <a href="../index.html" class="logo">Tingo<span>Rooms.</span></a>
-        <a href="../index.html" style="color:var(--muted); text-decoration:none; font-size:0.9rem;">← Back to feed</a>
+        <a href="/" class="logo">Tingo<span>Rooms.</span></a>
+        <a href="/" style="color:var(--muted); text-decoration:none; font-size:0.9rem;">← Back to feed</a>
     </header>
     <img src="${mainImg}" class="hero-img" alt="${cleanTitle}">
     <div class="content">
@@ -99,36 +82,28 @@ async function buildSite() {
         function openChat(ownerId, postId) {
             const token = localStorage.getItem('tingo_session_token');
             if(!token) {
-                // Save where the user wanted to go so auth.html can send them back later
                 localStorage.setItem('redirect_after_login', window.location.pathname);
-                window.location.href = '../auth.html';
+                window.location.href = '/auth';
                 return;
             }
-            // Navigate to chat passing the owner and post IDs
-            window.location.href = '../chat.html?target_user=' + ownerId + '&post_id=' + postId;
+            window.location.href = '/chat?target_user=' + ownerId + '&post_id=' + postId;
         }
     </script>
 </body>
 </html>`;
 
-    // The Folder Method: Creates a directory for the slug and writes index.html inside it
-    const dirPath = path.join(rootPath, post.slug);
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-    }
-    fs.writeFileSync(path.join(dirPath, 'index.html'), postHtml);
+    // Write file directly to root as .html (GitHub Pages will serve it extensionless)
+    fs.writeFileSync(path.join(rootPath, `${post.slug}.html`), postHtml);
   });
 
-  // ----------------------------------------------------
-  // 2. GENERATE STATIC INDEX.HTML (With Embedded Data)
-  // ----------------------------------------------------
+  // 2. GENERATE STATIC INDEX.HTML
   const indexHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TingoRooms | Verified Rooms & Flatmates in Pune</title>
-    <meta name="description" content="Discover verified room rentals, shared apartments, and flatmates across Pune. Instant search, live GPS distance, and direct owner chat.">
+    <meta name="description" content="Discover verified room rentals, shared apartments, and flatmates across Pune.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --surface-light: #262626; --text-main: #ffffff; --text-muted: #a3a3a3; --shadow: 0 4px 6px -1px rgba(0,0,0,0.5); --nav-height: 65px; }
@@ -168,7 +143,7 @@ async function buildSite() {
 <body>
     <header>
         <div class="header-top">
-            <a href="index.html" class="logo">Tingo<span>Rooms.</span></a>
+            <a href="/" class="logo">Tingo<span>Rooms.</span></a>
             <div id="user-greeting" style="font-size:0.9rem; color:var(--text-muted);">Welcome to TingoRooms</div>
         </div>
         <div class="search-wrapper">
@@ -180,21 +155,21 @@ async function buildSite() {
     <main class="feed-container">
         <div id="noticeBanner" class="notice-banner"></div>
         <div class="section-title" id="feed-title">All Rooms in Pune</div>
-        <div id="listings-wrapper"></div>
+        <div id="listings-wrapper">
+            <div style="text-align:center; padding:40px; color:var(--text-muted);">Loading feed...</div>
+        </div>
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span>Home</a>
-        <a href="map.html" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
-        <a href="post.html" class="nav-item add-post-btn">+</a>
-        <a href="chat.html" class="nav-item"><span class="nav-icon">💬</span>Chat</a>
-        <a href="auth.html" class="nav-item"><span class="nav-icon">👤</span>Account</a>
+        <a href="/" class="nav-item active"><span class="nav-icon">🏠</span>Home</a>
+        <a href="/map" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
+        <a href="/post" class="nav-item add-post-btn">+</a>
+        <a href="/chat" class="nav-item"><span class="nav-icon">💬</span>Chat</a>
+        <a href="/auth" class="nav-item"><span class="nav-icon">👤</span>Account</a>
     </nav>
 
     <script>
-        // 1. EMBEDDED DATA FROM BUILD STEP (Zero DB Reads on Visit!)
         const allPosts = ${JSON.stringify(postsData).replace(/</g, '\\u003c')};
-        
         let userLat = null;
         let userLon = null;
 
@@ -228,7 +203,8 @@ async function buildSite() {
                 const typeClass = post.post_type === 'seeking' ? 'type-seeking' : 'type-offering';
                 const typeText = post.post_type === 'seeking' ? 'Seeking' : 'Offering';
                 
-                const postUrl = post.slug ? post.slug : 'post-detail.html?id=' + post.id;
+                // Clean link pointing to /slug (No trailing slash, no .html visible)
+                const postUrl = post.slug ? '/' + post.slug : '/post-detail?id=' + post.id;
 
                 wrapper.innerHTML += \`
                     <a class="card" href="\${postUrl}">
@@ -248,7 +224,6 @@ async function buildSite() {
 
         function sortAndRender(refLat, refLon, areaName = null) {
             let workingList = allPosts.map(p => ({ ...p }));
-            
             if (refLat && refLon) {
                 workingList.forEach(p => p.distance = calculateDistance(refLat, refLon, p.latitude, p.longitude));
                 workingList.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
@@ -264,12 +239,26 @@ async function buildSite() {
             renderListings(workingList);
         }
 
+        // INSTANT CACHE LOADING: Eliminates GPS wait time when hitting back button
         function getUserLocation() {
+            const cachedLat = sessionStorage.getItem('tingo_user_lat');
+            const cachedLon = sessionStorage.getItem('tingo_user_lon');
+
+            if (cachedLat && cachedLon) {
+                userLat = parseFloat(cachedLat);
+                userLon = parseFloat(cachedLon);
+                document.getElementById('feed-title').innerText = 'Rooms Near You';
+                sortAndRender(userLat, userLon);
+                return;
+            }
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         userLat = pos.coords.latitude;
                         userLon = pos.coords.longitude;
+                        sessionStorage.setItem('tingo_user_lat', userLat);
+                        sessionStorage.setItem('tingo_user_lon', userLon);
                         document.getElementById('feed-title').innerText = 'Rooms Near You';
                         sortAndRender(userLat, userLon);
                     },
@@ -291,6 +280,10 @@ async function buildSite() {
                 if (query.length === 0) sortAndRender(userLat, userLon);
                 return;
             }
+
+            // SEARCH ANIMATION: Show visual feedback while fetching
+            suggestionsBox.innerHTML = '<div class="suggestion-item" style="text-align:center; font-weight:600; color:var(--primary);">Searching area...</div>';
+            suggestionsBox.style.display = 'block';
 
             searchTimeout = setTimeout(() => {
                 const puneViewbox = '73.70,18.70,74.05,18.40';
@@ -315,8 +308,12 @@ async function buildSite() {
                             suggestionsBox.appendChild(div);
                         });
                         suggestionsBox.style.display = 'block';
+                    } else {
+                        suggestionsBox.innerHTML = '<div class="suggestion-item" style="text-align:center; color:var(--text-muted);">No matching areas found</div>';
                     }
-                }).catch(() => {});
+                }).catch(() => {
+                    suggestionsBox.style.display = 'none';
+                });
             }, 300);
         });
 
