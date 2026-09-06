@@ -14,30 +14,14 @@ const escapeAttr = (str) => {
 
 async function buildSite() {
   const rootPath = __dirname;
-
-  // 1. Automatically create the 'room' directory if it doesn't exist
   const roomDir = path.join(rootPath, 'room');
-  if (!fs.existsSync(roomDir)) {
-      fs.mkdirSync(roomDir);
-  }
+  if (!fs.existsSync(roomDir)) { fs.mkdirSync(roomDir); }
 
-  // Fetch all approved listings from Supabase
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching posts:', error);
-    process.exit(1);
-  }
-
+  const { data: posts, error } = await supabase.from('posts').select('*').eq('status', 'approved').order('created_at', { ascending: false });
+  if (error) { console.error('Error fetching posts:', error); process.exit(1); }
   const postsData = posts || [];
 
-  // ----------------------------------------------------
-  // 1. GENERATE INDIVIDUAL SEO POST PAGES (Inside /room/)
-  // ----------------------------------------------------
+  // 1. GENERATE INDIVIDUAL SEO POST PAGES
   postsData.forEach((post) => {
     const mainImg = (post.image_urls && post.image_urls.length > 0) ? post.image_urls[0] : 'https://placehold.co/800x500/121212/dc2626?text=TingoRooms';
     const cleanTitle = escapeAttr(post.title || `${post.post_type === 'seeking' ? 'Need Room' : 'Room Available'} in ${post.location}`);
@@ -57,7 +41,6 @@ async function buildSite() {
     <meta property="og:type" content="article">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Use absolute path so it loads properly from inside the /room/ folder -->
     <script src="/config.js"></script>
     <style>
         :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --border: #262626; --text: #ffffff; --muted: #a3a3a3; }
@@ -73,7 +56,8 @@ async function buildSite() {
         .badge-seeking { background:rgba(220,38,38,0.2); color:var(--primary); }
         h1 { font-size:1.8rem; font-weight:800; margin-bottom:10px; line-height:1.3; }
         .price { font-size:1.6rem; color:var(--primary); font-weight:800; margin-bottom:15px; }
-        .meta-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; margin:20px 0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+        .meta-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; margin:20px 0; display:grid; grid-template-columns: 1fr 1fr; gap:15px; }
+        .meta-item { display:flex; flex-direction:column; }
         .desc { font-size:1.05rem; line-height:1.7; color:#d4d4d8; margin:20px 0; white-space:pre-wrap; }
         .action-bar { position:fixed; bottom:0; left:0; width:100%; background:var(--surface); border-top:1px solid var(--border); padding:12px 20px; display:flex; justify-content:space-between; align-items:center; max-width:100%; z-index:100; }
         .btn-msg { background:var(--primary); color:#fff; padding:12px 25px; border-radius:8px; border:none; font-size:1rem; font-weight:700; cursor:pointer; }
@@ -90,8 +74,9 @@ async function buildSite() {
         <h1>${cleanTitle}</h1>
         <div class="price">₹${(post.rent_amount || 0).toLocaleString()} <span style="font-size:0.9rem; color:var(--muted); font-weight:400;">/ month</span></div>
         <div class="meta-box">
-            <div><span style="color:var(--muted); font-size:0.85rem; display:block;">Location</span><strong>📍 ${escapeAttr(post.location || 'Pune')}</strong></div>
-            <div><span style="color:var(--muted); font-size:0.85rem; display:block;">Deposit</span><strong>₹${(post.deposit_amount || 0).toLocaleString()}</strong></div>
+            <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Location</span><strong>📍 ${escapeAttr(post.location || 'Pune')}</strong></div>
+            <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Deposit</span><strong>₹${(post.deposit_amount || 0).toLocaleString()}</strong></div>
+            <div class="meta-item" style="grid-column: 1 / -1;"><span style="color:var(--muted); font-size:0.85rem;">Brokerage</span><strong>₹${(post.brokerage_amount || 0).toLocaleString()}</strong></div>
         </div>
         <h3 style="margin-bottom:8px;">Description</h3>
         <div class="desc">${escapeAttr(post.description || 'No description provided.')}</div>
@@ -113,21 +98,17 @@ async function buildSite() {
     </script>
 </body>
 </html>`;
-
-    // Save the file into the new /room/ folder
     fs.writeFileSync(path.join(roomDir, `${post.slug}.html`), postHtml);
   });
 
-  // ----------------------------------------------------
-  // 2. GENERATE STATIC INDEX.HTML (With Embedded Data)
-  // ----------------------------------------------------
+  // 2. GENERATE STATIC INDEX.HTML (With Embedded Data & Instant Load)
   const indexHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TingoRooms | Verified Rooms & Flatmates in Pune</title>
-    <meta name="description" content="Discover verified room rentals, shared apartments, and flatmates across Pune. Instant search, live GPS distance, and direct owner chat.">
+    <meta name="description" content="Discover verified room rentals, shared apartments, and flatmates across Pune.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --surface-light: #262626; --text-main: #ffffff; --text-muted: #a3a3a3; --shadow: 0 4px 6px -1px rgba(0,0,0,0.5); --nav-height: 65px; }
@@ -140,9 +121,11 @@ async function buildSite() {
         .search-wrapper { position: relative; }
         .search-input { width: 100%; padding: 12px 15px; background-color: var(--surface); border: 1px solid var(--surface-light); border-radius: 8px; color: white; font-size: 1rem; outline: none; }
         .search-input:focus { border-color: var(--primary); }
-        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: var(--surface); border: 1px solid var(--surface-light); border-radius: 8px; margin-top: 5px; max-height: 200px; overflow-y: auto; display: none; z-index: 101; box-shadow: var(--shadow); }
-        .suggestion-item { padding: 12px 15px; border-bottom: 1px solid var(--surface-light); cursor: pointer; font-size: 0.9rem; color: var(--text-muted); }
-        .suggestion-item:hover { background-color: var(--surface-light); color: white; }
+        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: var(--surface); border: 1px solid var(--surface-light); border-radius: 8px; margin-top: 5px; max-height: 250px; overflow-y: auto; display: none; z-index: 101; box-shadow: var(--shadow); }
+        .suggestion-item { padding: 12px 15px; border-bottom: 1px solid var(--surface-light); cursor: pointer; font-size: 0.9rem; color: var(--text-muted); display: flex; flex-direction: column; }
+        .suggestion-item span.main-text { color: white; font-weight: 600; margin-bottom: 2px; }
+        .suggestion-item span.sub-text { font-size: 0.75rem; color: #737373; }
+        .suggestion-item:hover { background-color: var(--surface-light); }
         .feed-container { padding: 20px; max-width: 900px; margin: 0 auto; }
         .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-muted); }
         .notice-banner { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.4); color: #fca5a5; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 15px; display: none; }
@@ -150,7 +133,8 @@ async function buildSite() {
         .card:hover { transform: translateY(-2px); }
         .card-img { width: 100%; height: 200px; background-color: var(--surface-light); object-fit: cover; }
         .card-body { padding: 15px; }
-        .card-price { color: var(--text-main); font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
+        .card-price { color: var(--text-main); font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .card-financials { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; }
         .card-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 8px; }
         .card-meta { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); align-items: center; }
         .dist-badge { background: rgba(220, 38, 38, 0.15); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-weight: 600; }
@@ -168,10 +152,10 @@ async function buildSite() {
     <header>
         <div class="header-top">
             <a href="/" class="logo">Tingo<span>Rooms.</span></a>
-            <div id="user-greeting" style="font-size:0.9rem; color:var(--text-muted);">Welcome to TingoRooms</div>
+            <div id="user-greeting" style="font-size:0.9rem; color:var(--text-muted);">Welcome</div>
         </div>
         <div class="search-wrapper">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search area in Pune (e.g., Kothrud)..." autocomplete="off">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search areas, chowks, shops..." autocomplete="off">
             <div id="suggestionsBox" class="suggestions-box"></div>
         </div>
     </header>
@@ -179,9 +163,8 @@ async function buildSite() {
     <main class="feed-container">
         <div id="noticeBanner" class="notice-banner"></div>
         <div class="section-title" id="feed-title">All Rooms in Pune</div>
-        <div id="listings-wrapper">
-            <div style="text-align:center; padding:40px; color:var(--text-muted);">Loading feed...</div>
-        </div>
+        <!-- Intentionally empty. JS fills this synchronously for instant loading -->
+        <div id="listings-wrapper"></div>
     </main>
 
     <nav class="bottom-nav">
@@ -194,7 +177,6 @@ async function buildSite() {
 
     <script>
         const allPosts = ${JSON.stringify(postsData).replace(/</g, '\\u003c')};
-        
         let userLat = null;
         let userLon = null;
 
@@ -214,7 +196,7 @@ async function buildSite() {
 
             if (isFallback) {
                 notice.style.display = 'block';
-                notice.innerText = 'No direct listings in ' + fallbackArea + ' yet. Showing closest rooms nearby:';
+                notice.innerText = 'No exact matches in ' + fallbackArea + ' yet. Showing closest spaces nearby:';
             } else { notice.style.display = 'none'; }
 
             if (!postsToRender || postsToRender.length === 0) {
@@ -227,15 +209,16 @@ async function buildSite() {
                 const distHtml = (post.distance !== null && post.distance !== undefined) ? '<span class="dist-badge">' + post.distance + ' km away</span>' : '';
                 const typeClass = post.post_type === 'seeking' ? 'type-seeking' : 'type-offering';
                 const typeText = post.post_type === 'seeking' ? 'Seeking' : 'Offering';
-                
-                // Point directly to the new /room/ path
                 const postUrl = post.slug ? '/room/' + post.slug : '/post-detail?id=' + post.id;
 
                 wrapper.innerHTML += \`
                     <a class="card" href="\${postUrl}">
                         <img src="\${imgUrl}" class="card-img" alt="\${post.title || 'Room'}">
                         <div class="card-body">
-                            <div class="card-price">₹\${(post.rent_amount || 0).toLocaleString()}/mo</div>
+                            <div class="card-price">
+                                ₹\${(post.rent_amount || 0).toLocaleString()}/mo
+                                <span class="card-financials">Dep: ₹\${(post.deposit_amount || 0).toLocaleString()} | Brk: ₹\${(post.brokerage_amount || 0).toLocaleString()}</span>
+                            </div>
                             <div class="card-title">\${post.title || 'Room Listing'}</div>
                             <div class="card-meta">
                                 <span>📍 \${post.location || 'Pune'} <span class="type-badge \${typeClass}">\${typeText}</span></span>
@@ -249,7 +232,6 @@ async function buildSite() {
 
         function sortAndRender(refLat, refLon, areaName = null) {
             let workingList = allPosts.map(p => ({ ...p }));
-            
             if (refLat && refLon) {
                 workingList.forEach(p => p.distance = calculateDistance(refLat, refLon, p.latitude, p.longitude));
                 workingList.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
@@ -265,34 +247,29 @@ async function buildSite() {
             renderListings(workingList);
         }
 
-        function getUserLocation() {
-            const cachedLat = sessionStorage.getItem('tingo_user_lat');
-            const cachedLon = sessionStorage.getItem('tingo_user_lon');
-
-            if (cachedLat && cachedLon) {
-                userLat = parseFloat(cachedLat);
-                userLon = parseFloat(cachedLon);
-                document.getElementById('feed-title').innerText = 'Rooms Near You';
-                sortAndRender(userLat, userLon);
-                return;
-            }
-
+        // SYNCHRONOUS CACHE EXECUTION: Zero flicker, instant rendering on 'Back'
+        const cachedLat = sessionStorage.getItem('tingo_user_lat');
+        const cachedLon = sessionStorage.getItem('tingo_user_lon');
+        if (cachedLat && cachedLon) {
+            userLat = parseFloat(cachedLat);
+            userLon = parseFloat(cachedLon);
+            document.getElementById('feed-title').innerText = 'Rooms Near You';
+            sortAndRender(userLat, userLon);
+        } else {
+            sortAndRender(null, null); // Render immediately without distance
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        userLat = pos.coords.latitude;
-                        userLon = pos.coords.longitude;
-                        sessionStorage.setItem('tingo_user_lat', userLat);
-                        sessionStorage.setItem('tingo_user_lon', userLon);
-                        document.getElementById('feed-title').innerText = 'Rooms Near You';
-                        sortAndRender(userLat, userLon);
-                    },
-                    () => sortAndRender(null, null),
-                    { enableHighAccuracy: false, timeout: 4000 }
-                );
-            } else { sortAndRender(null, null); }
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    userLat = pos.coords.latitude;
+                    userLon = pos.coords.longitude;
+                    sessionStorage.setItem('tingo_user_lat', userLat);
+                    sessionStorage.setItem('tingo_user_lon', userLon);
+                    document.getElementById('feed-title').innerText = 'Rooms Near You';
+                    sortAndRender(userLat, userLon);
+                }, () => {}, { enableHighAccuracy: false, timeout: 4000 });
+            }
         }
 
+        // UPGRADED PHOTON API: Supports partial words (bavdh -> Bavdhan), shops, chowks
         const searchInput = document.getElementById('searchInput');
         const suggestionsBox = document.getElementById('suggestionsBox');
         let searchTimeout;
@@ -306,38 +283,40 @@ async function buildSite() {
                 return;
             }
 
-            suggestionsBox.innerHTML = '<div class="suggestion-item" style="text-align:center; font-weight:600; color:var(--primary);">Searching area...</div>';
+            suggestionsBox.innerHTML = '<div class="suggestion-item"><span class="main-text" style="color:var(--primary); text-align:center;">Searching...</span></div>';
             suggestionsBox.style.display = 'block';
 
             searchTimeout = setTimeout(() => {
-                const puneViewbox = '73.70,18.70,74.05,18.40';
-                fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&viewbox=' + puneViewbox + '&bounded=1&countrycodes=in&limit=6')
+                // Photon API focused near Pune coordinates
+                fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&lat=18.5204&lon=73.8567&limit=6')
                 .then(r => r.json())
-                .then(places => {
+                .then(data => {
                     suggestionsBox.innerHTML = '';
-                    if (places && places.length > 0) {
-                        places.forEach(place => {
+                    if (data.features && data.features.length > 0) {
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            const coords = feature.geometry.coordinates;
                             const div = document.createElement('div');
                             div.className = 'suggestion-item';
-                            const parts = place.display_name.split(',');
-                            const cleanName = (parts[0] + ', ' + (parts[1] || '')).trim();
-                            div.innerText = cleanName;
+                            
+                            const mainName = props.name || props.street || query;
+                            const subName = [props.district, props.city, props.state].filter(Boolean).join(', ');
+                            
+                            div.innerHTML = \`<span class="main-text">\${mainName}</span><span class="sub-text">\${subName || 'Pune'}</span>\`;
 
                             div.onclick = () => {
-                                searchInput.value = cleanName;
+                                searchInput.value = mainName;
                                 suggestionsBox.style.display = 'none';
-                                document.getElementById('feed-title').innerText = 'Rooms near ' + cleanName;
-                                sortAndRender(parseFloat(place.lat), parseFloat(place.lon), parts[0].trim());
+                                document.getElementById('feed-title').innerText = 'Near ' + mainName;
+                                sortAndRender(coords[1], coords[0], mainName);
                             };
                             suggestionsBox.appendChild(div);
                         });
                         suggestionsBox.style.display = 'block';
                     } else {
-                        suggestionsBox.innerHTML = '<div class="suggestion-item" style="text-align:center; color:var(--text-muted);">No matching areas found</div>';
+                        suggestionsBox.innerHTML = '<div class="suggestion-item"><span class="sub-text" style="text-align:center;">No locations found</span></div>';
                     }
-                }).catch(() => {
-                    suggestionsBox.style.display = 'none';
-                });
+                }).catch(() => { suggestionsBox.style.display = 'none'; });
             }, 300);
         });
 
@@ -347,14 +326,14 @@ async function buildSite() {
             }
         });
 
-        window.onload = () => {
+        // Set name dynamically if logged in
+        window.addEventListener('DOMContentLoaded', () => {
             const userName = localStorage.getItem('tingo_user_name');
             if (userName) {
                 document.getElementById('user-greeting').innerText = 'Hi, ' + userName.split(' ')[0];
                 document.getElementById('user-greeting').style.color = '#fff';
             }
-            getUserLocation();
-        };
+        });
     </script>
 </body>
 </html>`;
