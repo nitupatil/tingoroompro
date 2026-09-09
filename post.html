@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TingoRooms | Post a Room</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Absolute path ensures it loads correctly from anywhere -->
+    <script src="/config.js"></script>
+
+    <style>
+        :root {
+            --primary: #dc2626; --primary-hover: #b91c1c;
+            --bg: #000000; --surface: #121212; --surface-light: #262626;
+            --text-main: #ffffff; --text-muted: #a3a3a3; --border: #333333;
+            --nav-height: 65px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); }
+
+        header {
+            position: sticky; top: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+            padding: 15px 20px; z-index: 100; border-bottom: 1px solid var(--surface-light); text-align: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; text-decoration: none; color: white; }
+        .logo span { color: var(--primary); }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; font-weight: 700; }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 1rem; background-color: var(--surface); color: white; outline: none; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+
+        /* Autocomplete Suggestions */
+        .suggestions-box {
+            position: absolute; top: 100%; left: 0; width: 100%; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 8px; margin-top: 5px; max-height: 250px;
+            overflow-y: auto; display: none; z-index: 101; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+        .suggestion-item { padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; flex-direction: column; }
+        .suggestion-item span.main-text { color: white; font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+        .suggestion-item span.sub-text { font-size: 0.75rem; color: #737373; }
+        .suggestion-item:hover { background-color: var(--surface-light); }
+
+        /* Image Upload */
+        .image-preview-container { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px; }
+        .image-preview { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+
+        .btn-submit {
+            width: 100%; padding: 16px; background: var(--primary); color: white; border: none;
+            border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 10px;
+        }
+        .btn-submit:hover { background: var(--primary-hover); }
+        .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Bottom App Navigation */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height);
+            background-color: var(--surface); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+        }
+        .nav-item { color: var(--text-muted); text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; font-weight: 500; width: 25%; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
+        .add-post-btn { background-color: var(--primary); color: white !important; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; transform: translateY(-10px); box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo">Tingo<span>Rooms.</span></a>
+    </header>
+
+    <div class="container">
+        <h1>Post a Listing</h1>
+        
+        <div class="row">
+            <div class="form-group">
+                <label>I am...</label>
+                <select id="postType">
+                    <option value="offering">Offering a Room</option>
+                    <option value="seeking">Seeking a Room</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="category">
+                    <option value="1BHK">1 BHK</option>
+                    <option value="1RK">1 RK</option>
+                    <option value="2BHK">2 BHK</option>
+                    <option value="PG">PG / Hostel</option>
+                    <option value="Shared">Shared Room</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Location (Area, Chowk, or Building)</label>
+            <input type="text" id="locSearch" placeholder="e.g., Bavdhan, Chandni Chowk..." autocomplete="off">
+            <div id="locSuggestions" class="suggestions-box"></div>
+            
+            <!-- Hidden inputs to store exact GPS coordinates and clean name -->
+            <input type="hidden" id="locLat">
+            <input type="hidden" id="locLon">
+            <input type="hidden" id="locCleanName">
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Rent (₹ / mo)</label>
+                <input type="number" id="rent" placeholder="e.g. 15000">
+            </div>
+            <div class="form-group">
+                <label>Deposit (₹)</label>
+                <input type="number" id="deposit" placeholder="e.g. 45000">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Brokerage (₹) - Enter 0 if none</label>
+            <input type="number" id="brokerage" value="0">
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" rows="4" placeholder="Mention amenities, rules, family/bachelor preferences, exact location details..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Photos (Max 3)</label>
+            <input type="file" id="imageInput" accept="image/*" multiple max="3">
+            <div id="imagePreviewContainer" class="image-preview-container"></div>
+        </div>
+
+        <button class="btn-submit" id="submitBtn" onclick="handleSubmit()">Submit Listing</button>
+    </div>
+
+    <!-- App Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item"><span class="nav-icon">🏠</span>Home</a>
+        <a href="/map" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
+        <a href="/post" class="nav-item active add-post-btn">+</a>
+        <a href="/chat" class="nav-item"><span class="nav-icon">💬</span>Chat</a>
+        <a href="/auth" class="nav-item"><span class="nav-icon">👤</span>Account</a>
+    </nav>
+
+    <script>
+        if (typeof CONFIG === 'undefined') alert("Config missing. Check your script paths.");
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
+        let uploadedImageUrls = [];
+        let selectedFiles = [];
+
+        // 1. Frictionless Draft Recovery
+        window.onload = () => {
+            const draft = localStorage.getItem('tingo_post_draft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                document.getElementById('postType').value = data.postType || 'offering';
+                document.getElementById('category').value = data.category || '1BHK';
+                document.getElementById('locSearch').value = data.locationName || '';
+                document.getElementById('locLat').value = data.lat || '';
+                document.getElementById('locLon').value = data.lon || '';
+                document.getElementById('locCleanName').value = data.cleanName || '';
+                document.getElementById('rent').value = data.rent || '';
+                document.getElementById('deposit').value = data.deposit || '';
+                document.getElementById('brokerage').value = data.brokerage || '';
+                document.getElementById('description').value = data.description || '';
+                
+                // Clear draft so it doesn't persist forever
+                localStorage.removeItem('tingo_post_draft');
+                
+                // Notify user they didn't lose their data
+                if(data.rent) {
+                    alert("Welcome back! Your draft has been restored. You can now submit your listing.");
+                }
+            }
+        };
+
+        // 2. Photon API Auto-Complete (Fast, partial-word search)
+        const locSearch = document.getElementById('locSearch');
+        const locSuggestions = document.getElementById('locSuggestions');
+        let searchTimeout;
+
+        locSearch.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            // Reset hidden coordinates if they start typing again
+            document.getElementById('locLat').value = '';
+            document.getElementById('locLon').value = '';
+
+            if (query.length < 2) { locSuggestions.style.display = 'none'; return; }
+
+            locSuggestions.innerHTML = '<div class="suggestion-item"><span class="main-text" style="color:var(--primary); text-align:center;">Searching...</span></div>';
+            locSuggestions.style.display = 'block';
+
+            searchTimeout = setTimeout(() => {
+                // Biased heavily toward Pune coordinates
+                fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&lat=18.5204&lon=73.8567&limit=6')
+                .then(r => r.json())
+                .then(data => {
+                    locSuggestions.innerHTML = '';
+                    if (data.features && data.features.length > 0) {
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            const coords = feature.geometry.coordinates; // [lon, lat]
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            
+                            const mainName = props.name || props.street || query;
+                            const subName = [props.district, props.city, props.state].filter(Boolean).join(', ');
+                            
+                            div.innerHTML = \`<span class="main-text">\${mainName}</span><span class="sub-text">\${subName || 'Pune'}</span>\`;
+
+                            div.onclick = () => {
+                                locSearch.value = mainName + ', ' + (props.city || 'Pune');
+                                document.getElementById('locCleanName').value = mainName;
+                                document.getElementById('locLat').value = coords[1]; // lat
+                                document.getElementById('locLon').value = coords[0]; // lon
+                                locSuggestions.style.display = 'none';
+                            };
+                            locSuggestions.appendChild(div);
+                        });
+                        locSuggestions.style.display = 'block';
+                    } else {
+                        locSuggestions.innerHTML = '<div class="suggestion-item"><span class="sub-text" style="text-align:center;">No exact locations found</span></div>';
+                    }
+                }).catch(() => { locSuggestions.style.display = 'none'; });
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!locSearch.contains(e.target) && !locSuggestions.contains(e.target)) {
+                locSuggestions.style.display = 'none';
+            }
+        });
+
+        // 3. Image Upload Handling (Preview)
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const container = document.getElementById('imagePreviewContainer');
+            container.innerHTML = '';
+            
+            // Limit to 3 files max
+            selectedFiles = Array.from(e.target.files).slice(0, 3); 
+
+            selectedFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.className = 'image-preview';
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // 4. Submit Flow (Frictionless routing -> ImgBB upload -> Supabase)
+        async function handleSubmit() {
+            const type = document.getElementById('postType').value;
+            const category = document.getElementById('category').value;
+            const rent = document.getElementById('rent').value;
+            const deposit = document.getElementById('deposit').value;
+            const brokerage = document.getElementById('brokerage').value;
+            const description = document.getElementById('description').value;
+            const locName = document.getElementById('locSearch').value;
+            const cleanLocName = document.getElementById('locCleanName').value || locName;
+            const lat = document.getElementById('locLat').value;
+            const lon = document.getElementById('locLon').value;
+
+            // Form Validation
+            if(!rent || !deposit || !description) {
+                alert("Please fill out the Rent, Deposit, and Description fields.");
+                return;
+            }
+            if(!lat || !lon) {
+                alert("Please select a valid location from the dropdown suggestions so we can map it.");
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const token = localStorage.getItem('tingo_session_token');
+            const userId = localStorage.getItem('tingo_user_id');
+
+            // --- THE FRICTIONLESS BRIDGE ---
+            // If the user is NOT logged in, save their work and send them to the Auth page
+            if (!token || !userId) {
+                const draft = { 
+                    postType: type, category: category, rent: rent, deposit: deposit, 
+                    brokerage: brokerage, description: description, locationName: locName, 
+                    cleanName: cleanLocName, lat: lat, lon: lon 
+                };
+                localStorage.setItem('tingo_post_draft', JSON.stringify(draft));
+                localStorage.setItem('redirect_after_login', '/post');
+                window.location.href = '/auth';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Uploading Images...';
+
+            try {
+                // Upload Images to ImgBB
+                for (let file of selectedFiles) {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${CONFIG.IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        uploadedImageUrls.push(data.data.url);
+                    } else {
+                        console.error("ImgBB Upload Failed:", data);
+                    }
+                }
+
+                btn.innerText = 'Saving Listing...';
+
+                // Auto-Generate Clean SEO Title & Unique Slug
+                const titleStr = `${category} ${type === 'seeking' ? 'Requirement' : 'Available'} in ${cleanLocName}`;
+                // e.g., 1bhk-available-in-bavdhan-a7f9
+                const slugStr = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
+
+                // Insert into Supabase (Status defaults to 'pending' for your approval)
+                const { error } = await supabaseClient.from('posts').insert([{
+                    user_id: userId,
+                    title: titleStr,
+                    category: category,
+                    post_type: type,
+                    location: locName,
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    rent_amount: parseInt(rent),
+                    deposit_amount: parseInt(deposit),
+                    brokerage_amount: parseInt(brokerage || 0),
+                    description: description,
+                    image_urls: uploadedImageUrls,
+                    status: 'pending',
+                    slug: slugStr
+                }]);
+
+                if (error) throw error;
+
+                alert('Success! Your listing has been submitted and is pending review.');
+                window.location.href = '/';
+
+            } catch (err) {
+                alert("Error submitting post: " + err.message);
+                btn.disabled = false;
+                btn.innerText = 'Submit Listing';
+            }
+        }
+    </script>
+</body>
+</html>
