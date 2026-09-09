@@ -6,8 +6,6 @@
     <title>TingoRooms | Post a Room</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Absolute path ensures it loads correctly from anywhere -->
     <script src="/config.js"></script>
 
     <style>
@@ -33,7 +31,7 @@
 
         .form-group { margin-bottom: 20px; position: relative; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="tel"], .form-group select, .form-group textarea {
             width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px;
             font-size: 1rem; background-color: var(--surface); color: white; outline: none; transition: border-color 0.2s;
         }
@@ -41,6 +39,10 @@
 
         .row { display: flex; gap: 15px; }
         .row .form-group { flex: 1; }
+
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: -10px; margin-bottom: 20px; }
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-group label { margin: 0; font-size: 0.9rem; color: var(--text-main); cursor: pointer; }
 
         /* Autocomplete Suggestions */
         .suggestions-box {
@@ -63,6 +65,18 @@
         }
         .btn-submit:hover { background: var(--primary-hover); }
         .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Custom In-Page Toast Notification */
+        .toast {
+            visibility: hidden; min-width: 250px; background-color: var(--surface-light); color: white;
+            text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10001;
+            left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 600; font-size: 0.95rem;
+            opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+        }
+        .toast.show { visibility: visible; opacity: 1; bottom: 90px; }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
 
         /* Bottom App Navigation */
         .bottom-nav {
@@ -109,8 +123,6 @@
             <label>Location (Area, Chowk, or Building)</label>
             <input type="text" id="locSearch" placeholder="e.g., Bavdhan, Chandni Chowk..." autocomplete="off">
             <div id="locSuggestions" class="suggestions-box"></div>
-            
-            <!-- Hidden inputs to store exact GPS coordinates and clean name -->
             <input type="hidden" id="locLat">
             <input type="hidden" id="locLon">
             <input type="hidden" id="locCleanName">
@@ -133,6 +145,16 @@
         </div>
 
         <div class="form-group">
+            <label>WhatsApp / Contact Number <span style="color:var(--primary)">*</span></label>
+            <input type="tel" id="contactNumber" placeholder="+91 9876543210">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="showContact" checked>
+            <label for="showContact">Show my number publicly on the listing</label>
+        </div>
+
+        <div class="form-group">
             <label>Description</label>
             <textarea id="description" rows="4" placeholder="Mention amenities, rules, family/bachelor preferences, exact location details..."></textarea>
         </div>
@@ -145,6 +167,9 @@
 
         <button class="btn-submit" id="submitBtn" onclick="handleSubmit()">Submit Listing</button>
     </div>
+
+    <!-- Custom In-Page Alert -->
+    <div id="toast" class="toast"></div>
 
     <!-- App Bottom Navigation -->
     <nav class="bottom-nav">
@@ -162,6 +187,14 @@
         let uploadedImageUrls = [];
         let selectedFiles = [];
 
+        // 0. Custom Alert System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "toast show " + type;
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
+        }
+
         // 1. Frictionless Draft Recovery
         window.onload = () => {
             const draft = localStorage.getItem('tingo_post_draft');
@@ -176,19 +209,19 @@
                 document.getElementById('rent').value = data.rent || '';
                 document.getElementById('deposit').value = data.deposit || '';
                 document.getElementById('brokerage').value = data.brokerage || '';
+                document.getElementById('contactNumber').value = data.contactNumber || '';
+                document.getElementById('showContact').checked = data.showContact !== false; // defaults to true
                 document.getElementById('description').value = data.description || '';
                 
-                // Clear draft so it doesn't persist forever
                 localStorage.removeItem('tingo_post_draft');
                 
-                // Notify user they didn't lose their data
                 if(data.rent) {
-                    alert("Welcome back! Your draft has been restored. You can now submit your listing.");
+                    showToast("Welcome back! Your draft has been restored.", "success");
                 }
             }
         };
 
-        // 2. Photon API Auto-Complete (Fast, partial-word search)
+        // 2. Photon API Auto-Complete
         const locSearch = document.getElementById('locSearch');
         const locSuggestions = document.getElementById('locSuggestions');
         let searchTimeout;
@@ -197,7 +230,6 @@
             clearTimeout(searchTimeout);
             const query = this.value.trim();
             
-            // Reset hidden coordinates if they start typing again
             document.getElementById('locLat').value = '';
             document.getElementById('locLon').value = '';
 
@@ -207,7 +239,6 @@
             locSuggestions.style.display = 'block';
 
             searchTimeout = setTimeout(() => {
-                // Biased heavily toward Pune coordinates
                 fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&lat=18.5204&lon=73.8567&limit=6')
                 .then(r => r.json())
                 .then(data => {
@@ -215,21 +246,20 @@
                     if (data.features && data.features.length > 0) {
                         data.features.forEach(feature => {
                             const props = feature.properties;
-                            const coords = feature.geometry.coordinates; // [lon, lat]
+                            const coords = feature.geometry.coordinates; 
                             const div = document.createElement('div');
                             div.className = 'suggestion-item';
                             
                             const mainName = props.name || props.street || query;
                             const subName = [props.district, props.city, props.state].filter(Boolean).join(', ');
                             
-                            // FIXED: Clean template literals without backslashes
                             div.innerHTML = `<span class="main-text">${mainName}</span><span class="sub-text">${subName || 'Pune'}</span>`;
 
                             div.onclick = () => {
                                 locSearch.value = mainName + ', ' + (props.city || 'Pune');
                                 document.getElementById('locCleanName').value = mainName;
-                                document.getElementById('locLat').value = coords[1]; // lat
-                                document.getElementById('locLon').value = coords[0]; // lon
+                                document.getElementById('locLat').value = coords[1];
+                                document.getElementById('locLon').value = coords[0];
                                 locSuggestions.style.display = 'none';
                             };
                             locSuggestions.appendChild(div);
@@ -248,12 +278,10 @@
             }
         });
 
-        // 3. Image Upload Handling (Preview)
+        // 3. Image Upload Handling
         document.getElementById('imageInput').addEventListener('change', function(e) {
             const container = document.getElementById('imagePreviewContainer');
             container.innerHTML = '';
-            
-            // Limit to 3 files max
             selectedFiles = Array.from(e.target.files).slice(0, 3); 
 
             selectedFiles.forEach(file => {
@@ -268,26 +296,28 @@
             });
         });
 
-        // 4. Submit Flow (Frictionless routing -> ImgBB upload -> Supabase)
+        // 4. Submit Flow 
         async function handleSubmit() {
             const type = document.getElementById('postType').value;
             const category = document.getElementById('category').value;
             const rent = document.getElementById('rent').value;
             const deposit = document.getElementById('deposit').value;
             const brokerage = document.getElementById('brokerage').value;
+            const contactNumber = document.getElementById('contactNumber').value.trim();
+            const showContact = document.getElementById('showContact').checked;
             const description = document.getElementById('description').value;
             const locName = document.getElementById('locSearch').value;
             const cleanLocName = document.getElementById('locCleanName').value || locName;
             const lat = document.getElementById('locLat').value;
             const lon = document.getElementById('locLon').value;
 
-            // Form Validation
-            if(!rent || !deposit || !description) {
-                alert("Please fill out the Rent, Deposit, and Description fields.");
+            // Validation with Toast
+            if(!rent || !deposit || !description || !contactNumber) {
+                showToast("Please fill out Rent, Deposit, Contact Number, and Description.", "error");
                 return;
             }
             if(!lat || !lon) {
-                alert("Please select a valid location from the dropdown suggestions so we can map it.");
+                showToast("Please select a valid location from the dropdown suggestions.", "error");
                 return;
             }
 
@@ -299,8 +329,9 @@
             if (!token || !userId) {
                 const draft = { 
                     postType: type, category: category, rent: rent, deposit: deposit, 
-                    brokerage: brokerage, description: description, locationName: locName, 
-                    cleanName: cleanLocName, lat: lat, lon: lon 
+                    brokerage: brokerage, contactNumber: contactNumber, showContact: showContact,
+                    description: description, locationName: locName, cleanName: cleanLocName, 
+                    lat: lat, lon: lon 
                 };
                 localStorage.setItem('tingo_post_draft', JSON.stringify(draft));
                 localStorage.setItem('redirect_after_login', '/post');
@@ -323,18 +354,14 @@
                     const data = await res.json();
                     if(data.success) {
                         uploadedImageUrls.push(data.data.url);
-                    } else {
-                        console.error("ImgBB Upload Failed:", data);
                     }
                 }
 
                 btn.innerText = 'Saving Listing...';
-
-                // Auto-Generate Clean SEO Title & Unique Slug
                 const titleStr = `${category} ${type === 'seeking' ? 'Requirement' : 'Available'} in ${cleanLocName}`;
                 const slugStr = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
 
-                // Insert into Supabase (Status defaults to 'pending' for your approval)
+                // Insert into Supabase
                 const { error } = await supabaseClient.from('posts').insert([{
                     user_id: userId,
                     title: titleStr,
@@ -346,6 +373,8 @@
                     rent_amount: parseInt(rent),
                     deposit_amount: parseInt(deposit),
                     brokerage_amount: parseInt(brokerage || 0),
+                    contact_number: contactNumber,
+                    show_contact: showContact,
                     description: description,
                     image_urls: uploadedImageUrls,
                     status: 'pending',
@@ -354,11 +383,11 @@
 
                 if (error) throw error;
 
-                alert('Success! Your listing has been submitted and is pending review.');
-                window.location.href = '/';
+                showToast('Success! Your listing has been submitted and is pending review.', 'success');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
 
             } catch (err) {
-                alert("Error submitting post: " + err.message);
+                showToast("Error: " + err.message, "error");
                 btn.disabled = false;
                 btn.innerText = 'Submit Listing';
             }
