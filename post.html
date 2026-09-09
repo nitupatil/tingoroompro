@@ -222,7 +222,8 @@
                             const mainName = props.name || props.street || query;
                             const subName = [props.district, props.city, props.state].filter(Boolean).join(', ');
                             
-                            div.innerHTML = \`<span class="main-text">\${mainName}</span><span class="sub-text">\${subName || 'Pune'}</span>\`;
+                            // FIXED: Clean template literals without backslashes
+                            div.innerHTML = `<span class="main-text">${mainName}</span><span class="sub-text">${subName || 'Pune'}</span>`;
 
                             div.onclick = () => {
                                 locSearch.value = mainName + ', ' + (props.city || 'Pune');
@@ -295,7 +296,6 @@
             const userId = localStorage.getItem('tingo_user_id');
 
             // --- THE FRICTIONLESS BRIDGE ---
-            // If the user is NOT logged in, save their work and send them to the Auth page
             if (!token || !userId) {
                 const draft = { 
                     postType: type, category: category, rent: rent, deposit: deposit, 
@@ -332,7 +332,6 @@
 
                 // Auto-Generate Clean SEO Title & Unique Slug
                 const titleStr = `${category} ${type === 'seeking' ? 'Requirement' : 'Available'} in ${cleanLocName}`;
-                // e.g., 1bhk-available-in-bavdhan-a7f9
                 const slugStr = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
 
                 // Insert into Supabase (Status defaults to 'pending' for your approval)
