@@ -59,7 +59,6 @@
     <main class="feed-container">
         <div id="noticeBanner" class="notice-banner"></div>
         <div class="section-title" id="feed-title">All Rooms in Pune</div>
-        <!-- Intentionally empty. JS fills this synchronously for instant loading -->
         <div id="listings-wrapper"></div>
     </main>
 
@@ -143,7 +142,6 @@
             renderListings(workingList);
         }
 
-        // SYNCHRONOUS CACHE EXECUTION: Zero flicker, instant rendering on 'Back'
         const cachedLat = sessionStorage.getItem('tingo_user_lat');
         const cachedLon = sessionStorage.getItem('tingo_user_lon');
         if (cachedLat && cachedLon) {
@@ -152,7 +150,7 @@
             document.getElementById('feed-title').innerText = 'Rooms Near You';
             sortAndRender(userLat, userLon);
         } else {
-            sortAndRender(null, null); // Render immediately without distance
+            sortAndRender(null, null);
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     userLat = pos.coords.latitude;
@@ -165,7 +163,6 @@
             }
         }
 
-        // UPGRADED PHOTON API: Supports partial words (bavdh -> Bavdhan), shops, chowks
         const searchInput = document.getElementById('searchInput');
         const suggestionsBox = document.getElementById('suggestionsBox');
         let searchTimeout;
@@ -183,7 +180,6 @@
             suggestionsBox.style.display = 'block';
 
             searchTimeout = setTimeout(() => {
-                // Photon API focused near Pune coordinates
                 fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&lat=18.5204&lon=73.8567&limit=6')
                 .then(r => r.json())
                 .then(data => {
@@ -222,7 +218,6 @@
             }
         });
 
-        // Set name dynamically if logged in
         window.addEventListener('DOMContentLoaded', () => {
             const userName = localStorage.getItem('tingo_user_name');
             if (userName) {
