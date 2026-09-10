@@ -27,6 +27,26 @@ async function buildSite() {
     const cleanTitle = escapeAttr(post.title || `${post.post_type === 'seeking' ? 'Need Room' : 'Room Available'} in ${post.location}`);
     const metaDesc = escapeAttr((post.description || '').slice(0, 160));
 
+    // GENERATE CONTACT BLOCK (If user opted in)
+    let contactHtml = '';
+    if (post.show_contact && post.contact_number) {
+        const waNum = post.whatsapp_number || post.contact_number;
+        const cleanWa = waNum.replace(/\D/g, ''); // Removes spaces/pluses for the WhatsApp API link
+        
+        contactHtml = `
+        <div class="meta-item" style="grid-column: 1 / -1; background: rgba(220,38,38,0.1); padding: 15px; border-radius: 8px; margin-top: 5px;">
+            <span style="color:var(--muted); font-size:0.85rem; display:block; margin-bottom:8px;">Direct Contact Owner</span>
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <a href="tel:${escapeAttr(post.contact_number)}" style="color:white; text-decoration:none; display:flex; align-items:center; gap:6px; font-weight:600;">
+                    📞 ${escapeAttr(post.contact_number)}
+                </a>
+                <a href="https://wa.me/${cleanWa}" target="_blank" style="color:#25D366; text-decoration:none; display:flex; align-items:center; gap:6px; font-weight:600;">
+                    💬 Chat on WhatsApp
+                </a>
+            </div>
+        </div>`;
+    }
+
     const postHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,14 +96,15 @@ async function buildSite() {
         <div class="meta-box">
             <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Location</span><strong>📍 ${escapeAttr(post.location || 'Pune')}</strong></div>
             <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Deposit</span><strong>₹${(post.deposit_amount || 0).toLocaleString()}</strong></div>
-            <div class="meta-item" style="grid-column: 1 / -1;"><span style="color:var(--muted); font-size:0.85rem;">Brokerage</span><strong>₹${(post.brokerage_amount || 0).toLocaleString()}</strong></div>
+            <div class="meta-item"><span style="color:var(--muted); font-size:0.85rem;">Brokerage</span><strong>₹${(post.brokerage_amount || 0).toLocaleString()}</strong></div>
+            ${contactHtml}
         </div>
         <h3 style="margin-bottom:8px;">Description</h3>
         <div class="desc">${escapeAttr(post.description || 'No description provided.')}</div>
     </div>
     <div class="action-bar">
         <div><span style="font-size:0.8rem; color:var(--muted); display:block;">Interested?</span><strong>Contact Publisher</strong></div>
-        <button class="btn-msg" onclick="openChat('${post.user_id}', '${post.id}')">Chat with Owner</button>
+        <button class="btn-msg" onclick="openChat('${post.user_id}', '${post.id}')">In-App Chat</button>
     </div>
     <script>
         function openChat(ownerId, postId) {
@@ -163,7 +184,6 @@ async function buildSite() {
     <main class="feed-container">
         <div id="noticeBanner" class="notice-banner"></div>
         <div class="section-title" id="feed-title">All Rooms in Pune</div>
-        <!-- Intentionally empty. JS fills this synchronously for instant loading -->
         <div id="listings-wrapper"></div>
     </main>
 
@@ -247,7 +267,6 @@ async function buildSite() {
             renderListings(workingList);
         }
 
-        // SYNCHRONOUS CACHE EXECUTION: Zero flicker, instant rendering on 'Back'
         const cachedLat = sessionStorage.getItem('tingo_user_lat');
         const cachedLon = sessionStorage.getItem('tingo_user_lon');
         if (cachedLat && cachedLon) {
@@ -256,7 +275,7 @@ async function buildSite() {
             document.getElementById('feed-title').innerText = 'Rooms Near You';
             sortAndRender(userLat, userLon);
         } else {
-            sortAndRender(null, null); // Render immediately without distance
+            sortAndRender(null, null);
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     userLat = pos.coords.latitude;
@@ -269,7 +288,6 @@ async function buildSite() {
             }
         }
 
-        // UPGRADED PHOTON API: Supports partial words (bavdh -> Bavdhan), shops, chowks
         const searchInput = document.getElementById('searchInput');
         const suggestionsBox = document.getElementById('suggestionsBox');
         let searchTimeout;
@@ -287,7 +305,6 @@ async function buildSite() {
             suggestionsBox.style.display = 'block';
 
             searchTimeout = setTimeout(() => {
-                // Photon API focused near Pune coordinates
                 fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&lat=18.5204&lon=73.8567&limit=6')
                 .then(r => r.json())
                 .then(data => {
@@ -326,7 +343,6 @@ async function buildSite() {
             }
         });
 
-        // Set name dynamically if logged in
         window.addEventListener('DOMContentLoaded', () => {
             const userName = localStorage.getItem('tingo_user_name');
             if (userName) {
