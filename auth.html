@@ -5,63 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TingoRooms | Account</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/config.js"></script>
 
     <style>
-        :root {
-            --primary: #dc2626; --primary-hover: #b91c1c;
-            --bg: #000000; --surface: #121212; --surface-light: #262626;
-            --text-main: #ffffff; --text-muted: #a3a3a3; --border: #333333;
-            --nav-height: 65px;
-        }
-
+        :root { --primary: #dc2626; --primary-hover: #b91c1c; --bg: #000000; --surface: #121212; --surface-light: #262626; --text-main: #ffffff; --text-muted: #a3a3a3; --border: #333333; --nav-height: 65px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); }
-
-        header {
-            position: sticky; top: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
-            padding: 15px 20px; z-index: 100; border-bottom: 1px solid var(--surface-light); text-align: center;
-        }
+        header { position: sticky; top: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); padding: 15px 20px; z-index: 100; border-bottom: 1px solid var(--surface-light); text-align: center; }
         .logo { font-size: 1.5rem; font-weight: 800; text-decoration: none; color: white; }
         .logo span { color: var(--primary); }
-
         .container { max-width: 500px; margin: 40px auto; padding: 20px; }
         h1 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 700; text-align: center; }
         p.subtitle { text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
-
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
-        .form-group input {
-            width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px;
-            font-size: 1rem; background-color: var(--surface); color: white; outline: none; transition: border-color 0.2s;
-        }
+        .form-group input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--surface); color: white; outline: none; transition: border-color 0.2s; }
         .form-group input:focus { border-color: var(--primary); }
-
-        .btn-submit {
-            width: 100%; padding: 16px; background: var(--primary); color: white; border: none;
-            border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: background 0.2s;
-        }
+        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
         .btn-submit:hover { background: var(--primary-hover); }
         .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        .btn-outline {
-            width: 100%; padding: 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border);
-            border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 15px;
-        }
+        .btn-outline { width: 100%; padding: 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 15px; }
         .btn-outline:hover { background: var(--surface-light); }
-
         .auth-links { text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted); }
         .auth-links span { color: var(--primary); cursor: pointer; font-weight: 600; margin: 0 10px; }
         .auth-links span:hover { text-decoration: underline; }
-
-        /* Profile & Dashboard Styles */
         .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px; }
         .avatar { width: 80px; height: 80px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; margin: 0 auto 15px; }
-        
         .dashboard-title { font-size: 1.2rem; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
-        
         .my-post-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
         .post-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .post-title { font-weight: 600; font-size: 1.05rem; }
@@ -74,120 +45,72 @@
         .btn-edit:hover { background: #333; }
         .btn-delete { background: rgba(220, 38, 38, 0.1); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.3); }
         .btn-delete:hover { background: rgba(220, 38, 38, 0.2); }
-
-        /* Toast Notification */
         .toast { visibility: hidden; min-width: 250px; background-color: var(--surface-light); color: white; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10001; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 600; font-size: 0.95rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s; border: 1px solid var(--border); }
         .toast.show { visibility: visible; opacity: 1; bottom: 90px; }
         .toast.success { border-left: 4px solid #10b981; }
         .toast.error { border-left: 4px solid #ef4444; }
-
-        /* Bottom App Navigation */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background-color: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
         .nav-item { color: var(--text-muted); text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; font-weight: 500; width: 25%; }
         .nav-item.active { color: var(--primary); }
         .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
         .add-post-btn { background-color: var(--primary); color: white !important; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; transform: translateY(-10px); box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); }
-
-        /* ZERO-FLICKER LOGIC: Hide all views initially */
         #loginView, #signupView, #forgotView, #profileView { display: none; }
     </style>
-
-    <!-- ZERO DELAY STATE CHECK -->
     <script>
         const storedToken = localStorage.getItem('tingo_session_token');
-        if (storedToken) {
-            document.write('<style>#profileView { display: block !important; }</style>');
-        } else {
-            document.write('<style>#loginView { display: block !important; }</style>');
-        }
+        if (storedToken) { document.write('<style>#profileView { display: block !important; }</style>'); } 
+        else { document.write('<style>#loginView { display: block !important; }</style>'); }
     </script>
 </head>
 <body>
-
-    <header>
-        <a href="/" class="logo">Tingo<span>Rooms.</span></a>
-    </header>
+    <header><a href="/" class="logo">Tingo<span>Rooms.</span></a></header>
 
     <!-- VIEW 1: LOGIN -->
     <div class="container" id="loginView">
         <h1>Welcome Back</h1>
         <p class="subtitle">Sign in to manage your listings and chats.</p>
-        
-        <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
-        </div>
-        
+        <div class="form-group"><label>Email Address</label><input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
         <button class="btn-submit" id="loginBtn" onclick="handleLogin()">Sign In</button>
-        
-        <div class="auth-links">
-            <span onclick="switchView('forgotView')">Forgot Password?</span> | 
-            <span onclick="switchView('signupView')">Create Account</span>
-        </div>
+        <div class="auth-links"><span onclick="switchView('forgotView')">Forgot Password?</span> | <span onclick="switchView('signupView')">Create Account</span></div>
     </div>
 
     <!-- VIEW 2: SIGN UP -->
     <div class="container" id="signupView">
         <h1>Create Account</h1>
         <p class="subtitle">Join TingoRooms to post listings instantly.</p>
-        
-        <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" id="signupEmail" placeholder="you@example.com">
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="signupPassword" placeholder="Minimum 6 characters">
-        </div>
-        
+        <div class="form-group"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@example.com"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Minimum 6 characters"></div>
         <button class="btn-submit" id="signupBtn" onclick="handleSignup()">Sign Up</button>
-        
-        <div class="auth-links">
-            Already have an account? <span onclick="switchView('loginView')">Sign In</span>
-        </div>
+        <div class="auth-links">Already have an account? <span onclick="switchView('loginView')">Sign In</span></div>
     </div>
 
-    <!-- VIEW 3: FOR গঠিত PASSWORD -->
+    <!-- VIEW 3: FORGOT PASSWORD -->
     <div class="container" id="forgotView">
         <h1>Reset Password</h1>
         <p class="subtitle">Enter your email and we'll send you a reset link.</p>
-        
-        <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" id="resetEmail" placeholder="you@example.com">
-        </div>
-        
+        <div class="form-group"><label>Email Address</label><input type="email" id="resetEmail" placeholder="you@example.com"></div>
         <button class="btn-submit" id="resetBtn" onclick="handleReset()">Send Reset Link</button>
-        
-        <div class="auth-links">
-            Remembered your password? <span onclick="switchView('loginView')">Sign In</span>
-        </div>
+        <div class="auth-links">Remembered your password? <span onclick="switchView('loginView')">Sign In</span></div>
     </div>
 
     <!-- VIEW 4: PROFILE & DASHBOARD -->
     <div class="container" id="profileView" style="max-width: 600px;">
         <div class="profile-card">
             <div class="avatar" id="userAvatar">?</div>
+            <!-- The actual name is injected here -->
             <h2 id="userNameDisplay" style="margin-bottom: 5px;">User</h2>
             <p id="userEmailDisplay" style="color: var(--text-muted); margin-bottom: 25px;"></p>
-            
             <button class="btn-outline" onclick="logout()" style="width: auto; padding: 10px 20px; font-size:0.9rem;">Sign Out</button>
         </div>
-
         <div class="dashboard-title">My Listings</div>
         <div id="myPostsContainer">
             <div style="text-align:center; padding: 20px; color: var(--text-muted);">Loading your posts...</div>
         </div>
     </div>
 
-    <!-- Custom In-Page Alert -->
     <div id="toast" class="toast"></div>
 
-    <!-- App Bottom Navigation -->
     <nav class="bottom-nav">
         <a href="/" class="nav-item"><span class="nav-icon">🏠</span>Home</a>
         <a href="/map" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
@@ -198,11 +121,8 @@
 
     <script>
         if (typeof CONFIG === 'undefined') alert("Config missing. Check your script paths.");
-        
-        // FIXED: Changed to supabaseClient to prevent global naming conflicts
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         
-        // Custom Alert System
         function showToast(message, type = 'success') {
             const toast = document.getElementById("toast");
             toast.innerText = message;
@@ -210,16 +130,10 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
         }
 
-        // View Switcher
         function switchView(viewId) {
-            document.getElementById('loginView').style.display = 'none';
-            document.getElementById('signupView').style.display = 'none';
-            document.getElementById('forgotView').style.display = 'none';
-            document.getElementById('profileView').style.display = 'none';
+            ['loginView', 'signupView', 'forgotView', 'profileView'].forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById(viewId).style.display = 'block';
         }
-
-        // --- AUTHENTICATION LOGIC ---
 
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value.trim();
@@ -230,13 +144,8 @@
             btn.disabled = true; btn.innerText = "Signing in...";
 
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                showToast(error.message, "error");
-                btn.disabled = false; btn.innerText = "Sign In";
-            } else {
-                completeAuthFlow(data);
-            }
+            if (error) { showToast(error.message, "error"); btn.disabled = false; btn.innerText = "Sign In"; } 
+            else { completeAuthFlow(data); }
         }
 
         async function handleSignup() {
@@ -249,40 +158,23 @@
             btn.disabled = true; btn.innerText = "Creating Account...";
 
             const { data, error } = await supabaseClient.auth.signUp({ email, password });
-
-            if (error) {
-                showToast(error.message, "error");
-                btn.disabled = false; btn.innerText = "Sign Up";
-            } else {
+            if (error) { showToast(error.message, "error"); btn.disabled = false; btn.innerText = "Sign Up"; } 
+            else {
                 if (data.user && data.user.identities && data.user.identities.length === 0) {
-                    showToast("Email already exists. Please sign in.", "error");
-                    btn.disabled = false; btn.innerText = "Sign Up";
-                } else if (data.session) {
-                    completeAuthFlow(data);
-                } else {
-                    showToast("Account created! Please check your email to verify your account before logging in.", "success");
-                    setTimeout(() => switchView('loginView'), 3000);
-                }
+                    showToast("Email already exists. Please sign in.", "error"); btn.disabled = false; btn.innerText = "Sign Up";
+                } else if (data.session) { completeAuthFlow(data); } 
+                else { showToast("Account created! Check your email to verify.", "success"); setTimeout(() => switchView('loginView'), 3000); }
             }
         }
 
         async function handleReset() {
             const email = document.getElementById('resetEmail').value.trim();
             if(!email) return showToast("Please enter your email.", "error");
-
             const btn = document.getElementById('resetBtn');
             btn.disabled = true; btn.innerText = "Sending...";
-
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/auth'
-            });
-
-            if (error) {
-                showToast(error.message, "error");
-            } else {
-                showToast("Password reset link sent to your email!", "success");
-                setTimeout(() => switchView('loginView'), 3000);
-            }
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth' });
+            if (error) { showToast(error.message, "error"); } 
+            else { showToast("Password reset link sent!", "success"); setTimeout(() => switchView('loginView'), 3000); }
             btn.disabled = false; btn.innerText = "Send Reset Link";
         }
 
@@ -292,51 +184,37 @@
             localStorage.setItem('tingo_user_email', data.user.email);
             localStorage.setItem('tingo_user_name', data.user.email.split('@')[0]);
 
-            // The Frictionless Bridge
             const redirectTarget = localStorage.getItem('redirect_after_login');
-            if (redirectTarget) {
-                localStorage.removeItem('redirect_after_login'); 
-                window.location.href = redirectTarget; 
-            } else {
-                window.location.reload(); 
-            }
+            if (redirectTarget) { localStorage.removeItem('redirect_after_login'); window.location.href = redirectTarget; } 
+            else { window.location.reload(); }
         }
 
         async function logout() {
             await supabaseClient.auth.signOut();
-            localStorage.removeItem('tingo_session_token');
-            localStorage.removeItem('tingo_user_id');
-            localStorage.removeItem('tingo_user_email');
-            localStorage.removeItem('tingo_user_name');
+            localStorage.clear();
             window.location.reload();
         }
 
-        // --- DASHBOARD LOGIC (My Posts) ---
-
+        // --- SECURE DASHBOARD ---
         async function loadDashboard() {
             const email = localStorage.getItem('tingo_user_email') || 'User';
+            const userName = localStorage.getItem('tingo_user_name') || email.split('@')[0];
             const userId = localStorage.getItem('tingo_user_id');
             
+            // Displays the user's actual name
             document.getElementById('userEmailDisplay').innerText = email;
-            document.getElementById('userNameDisplay').innerText = email.split('@')[0];
-            document.getElementById('userAvatar').innerText = email.charAt(0).toUpperCase();
+            document.getElementById('userNameDisplay').innerText = userName;
+            document.getElementById('userAvatar').innerText = userName.charAt(0).toUpperCase();
 
             const container = document.getElementById('myPostsContainer');
 
+            // Strictly fetches ONLY the posts owned by this exact user
             const { data: posts, error } = await supabaseClient
-                .from('posts')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
+                .from('posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
 
-            if (error) {
-                container.innerHTML = '<div style="color:red; text-align:center;">Error loading posts.</div>';
-                return;
-            }
-
+            if (error) { container.innerHTML = '<div style="color:red; text-align:center;">Error loading posts.</div>'; return; }
             if (!posts || posts.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">You have not posted any rooms yet.<br><br><button class="btn-submit" onclick="window.location.href=\'/post\'" style="width: auto; padding: 10px 20px;">Post a Room</button></div>';
-                return;
+                container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">You have not posted any rooms yet.<br><br><button class="btn-submit" onclick="window.location.href=\'/post\'" style="width: auto; padding: 10px 20px;">Post a Room</button></div>'; return;
             }
 
             container.innerHTML = '';
@@ -351,7 +229,6 @@
                             <span class="status-badge ${statusClass}">${statusText}</span>
                         </div>
                         <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 5px;">📍 ${post.location} | ₹${post.rent_amount}/mo</div>
-                        
                         <div class="post-actions">
                             <button class="btn-action btn-edit" onclick="editPost('${post.id}')">Edit</button>
                             <button class="btn-action btn-delete" onclick="deletePost('${post.id}')">Delete</button>
@@ -363,25 +240,17 @@
 
         async function deletePost(postId) {
             if(!confirm("Are you sure you want to permanently delete this listing?")) return;
-            
             const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
-            
-            if (error) {
-                showToast("Failed to delete: " + error.message, "error");
-            } else {
-                document.getElementById(`post-card-${postId}`).remove();
-                showToast("Listing deleted successfully.", "success");
-            }
+            if (error) { showToast("Failed to delete: " + error.message, "error"); } 
+            else { document.getElementById(`post-card-${postId}`).remove(); showToast("Listing deleted.", "success"); }
         }
 
+        // Routes securely to the editor
         function editPost(postId) {
-            showToast("Edit feature is launching soon! Contact support for manual edits.", "success");
+            window.location.href = '/post?edit=' + postId;
         }
 
-        // Initialize Data on Load if logged in
-        if (storedToken) {
-            loadDashboard();
-        }
+        if (storedToken) { loadDashboard(); }
     </script>
 </body>
 </html>
