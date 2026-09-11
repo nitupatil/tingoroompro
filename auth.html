@@ -151,7 +151,7 @@
         </div>
     </div>
 
-    <!-- VIEW 3: FORGOT PASSWORD -->
+    <!-- VIEW 3: FOR গঠিত PASSWORD -->
     <div class="container" id="forgotView">
         <h1>Reset Password</h1>
         <p class="subtitle">Enter your email and we'll send you a reset link.</p>
@@ -198,7 +198,9 @@
 
     <script>
         if (typeof CONFIG === 'undefined') alert("Config missing. Check your script paths.");
-        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
+        // FIXED: Changed to supabaseClient to prevent global naming conflicts
+        const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         
         // Custom Alert System
         function showToast(message, type = 'success') {
@@ -227,7 +229,7 @@
             const btn = document.getElementById('loginBtn');
             btn.disabled = true; btn.innerText = "Signing in...";
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
             if (error) {
                 showToast(error.message, "error");
@@ -246,21 +248,18 @@
             const btn = document.getElementById('signupBtn');
             btn.disabled = true; btn.innerText = "Creating Account...";
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
             if (error) {
                 showToast(error.message, "error");
                 btn.disabled = false; btn.innerText = "Sign Up";
             } else {
-                // If Supabase requires email confirmation
                 if (data.user && data.user.identities && data.user.identities.length === 0) {
                     showToast("Email already exists. Please sign in.", "error");
                     btn.disabled = false; btn.innerText = "Sign Up";
                 } else if (data.session) {
-                    // Auto-login successful
                     completeAuthFlow(data);
                 } else {
-                    // Email confirmation required
                     showToast("Account created! Please check your email to verify your account before logging in.", "success");
                     setTimeout(() => switchView('loginView'), 3000);
                 }
@@ -274,7 +273,7 @@
             const btn = document.getElementById('resetBtn');
             btn.disabled = true; btn.innerText = "Sending...";
 
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                 redirectTo: window.location.origin + '/auth'
             });
 
@@ -304,7 +303,7 @@
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             localStorage.removeItem('tingo_session_token');
             localStorage.removeItem('tingo_user_id');
             localStorage.removeItem('tingo_user_email');
@@ -324,7 +323,7 @@
 
             const container = document.getElementById('myPostsContainer');
 
-            const { data: posts, error } = await supabase
+            const { data: posts, error } = await supabaseClient
                 .from('posts')
                 .select('*')
                 .eq('user_id', userId)
@@ -365,7 +364,7 @@
         async function deletePost(postId) {
             if(!confirm("Are you sure you want to permanently delete this listing?")) return;
             
-            const { error } = await supabase.from('posts').delete().eq('id', postId);
+            const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
             
             if (error) {
                 showToast("Failed to delete: " + error.message, "error");
@@ -376,7 +375,6 @@
         }
 
         function editPost(postId) {
-            // Future implementation: We will build edit.html or modify post.html to handle this ID
             showToast("Edit feature is launching soon! Contact support for manual edits.", "success");
         }
 
