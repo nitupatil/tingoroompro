@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TingoRooms | Account</title>
+    <title>TingoRooms | Post a Room</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/config.js"></script>
@@ -15,37 +15,28 @@
         header { position: sticky; top: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); padding: 15px 20px; z-index: 100; border-bottom: 1px solid var(--surface-light); text-align: center; }
         .logo { font-size: 1.5rem; font-weight: 800; text-decoration: none; color: white; }
         .logo span { color: var(--primary); }
-        .container { max-width: 500px; margin: 40px auto; padding: 20px; }
-        h1 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 700; text-align: center; }
-        p.subtitle { text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
-        .form-group { margin-bottom: 20px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; font-weight: 700; }
+        .form-group { margin-bottom: 20px; position: relative; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
-        .form-group input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--surface); color: white; outline: none; transition: border-color 0.2s; }
-        .form-group input:focus { border-color: var(--primary); }
-        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="tel"], .form-group select, .form-group textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background-color: var(--surface); color: white; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: -10px; margin-bottom: 20px; }
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-group label { margin: 0; font-size: 0.9rem; color: var(--text-main); cursor: pointer; }
+        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-top: 5px; max-height: 250px; overflow-y: auto; display: none; z-index: 101; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        .suggestion-item { padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; flex-direction: column; }
+        .suggestion-item span.main-text { color: white; font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+        .suggestion-item span.sub-text { font-size: 0.75rem; color: #737373; }
+        .suggestion-item:hover { background-color: var(--surface-light); }
+        .image-preview-container { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px; }
+        .image-preview { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-submit:hover { background: var(--primary-hover); }
         .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-outline { width: 100%; padding: 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 15px; }
-        .btn-outline:hover { background: var(--surface-light); }
-        .auth-links { text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted); }
-        .auth-links span { color: var(--primary); cursor: pointer; font-weight: 600; margin: 0 10px; }
-        .auth-links span:hover { text-decoration: underline; }
-        .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px; }
-        .avatar { width: 80px; height: 80px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; margin: 0 auto 15px; }
-        .dashboard-title { font-size: 1.2rem; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
-        .my-post-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .post-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .post-title { font-weight: 600; font-size: 1.05rem; }
-        .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-        .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .status-approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .post-actions { display: flex; gap: 10px; margin-top: 5px; }
-        .btn-action { flex: 1; padding: 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; }
-        .btn-edit { background: var(--surface-light); color: white; border: 1px solid var(--border); }
-        .btn-edit:hover { background: #333; }
-        .btn-delete { background: rgba(220, 38, 38, 0.1); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.3); }
-        .btn-delete:hover { background: rgba(220, 38, 38, 0.2); }
-        .toast { visibility: hidden; min-width: 250px; background-color: var(--surface-light); color: white; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10001; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 600; font-size: 0.95rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s; border: 1px solid var(--border); }
+        .toast { visibility: hidden; min-width: 250px; background-color: var(--surface-light); color: white; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10001; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 600; font-size: 0.95rem; opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid var(--border); }
         .toast.show { visibility: visible; opacity: 1; bottom: 90px; }
         .toast.success { border-left: 4px solid #10b981; }
         .toast.error { border-left: 4px solid #ef4444; }
@@ -54,59 +45,95 @@
         .nav-item.active { color: var(--primary); }
         .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
         .add-post-btn { background-color: var(--primary); color: white !important; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; transform: translateY(-10px); box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); }
-        #loginView, #signupView, #forgotView, #profileView { display: none; }
     </style>
-    <script>
-        const storedToken = localStorage.getItem('tingo_session_token');
-        if (storedToken) { document.write('<style>#profileView { display: block !important; }</style>'); } 
-        else { document.write('<style>#loginView { display: block !important; }</style>'); }
-    </script>
 </head>
 <body>
-    <header><a href="/" class="logo">Tingo<span>Rooms.</span></a></header>
 
-    <!-- VIEW 1: LOGIN -->
-    <div class="container" id="loginView">
-        <h1>Welcome Back</h1>
-        <p class="subtitle">Sign in to manage your listings and chats.</p>
-        <div class="form-group"><label>Email Address</label><input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
-        <button class="btn-submit" id="loginBtn" onclick="handleLogin()">Sign In</button>
-        <div class="auth-links"><span onclick="switchView('forgotView')">Forgot Password?</span> | <span onclick="switchView('signupView')">Create Account</span></div>
-    </div>
+    <header>
+        <a href="/" class="logo">Tingo<span>Rooms.</span></a>
+    </header>
 
-    <!-- VIEW 2: SIGN UP -->
-    <div class="container" id="signupView">
-        <h1>Create Account</h1>
-        <p class="subtitle">Join TingoRooms to post listings instantly.</p>
-        <div class="form-group"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@example.com"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Minimum 6 characters"></div>
-        <button class="btn-submit" id="signupBtn" onclick="handleSignup()">Sign Up</button>
-        <div class="auth-links">Already have an account? <span onclick="switchView('loginView')">Sign In</span></div>
-    </div>
-
-    <!-- VIEW 3: FORGOT PASSWORD -->
-    <div class="container" id="forgotView">
-        <h1>Reset Password</h1>
-        <p class="subtitle">Enter your email and we'll send you a reset link.</p>
-        <div class="form-group"><label>Email Address</label><input type="email" id="resetEmail" placeholder="you@example.com"></div>
-        <button class="btn-submit" id="resetBtn" onclick="handleReset()">Send Reset Link</button>
-        <div class="auth-links">Remembered your password? <span onclick="switchView('loginView')">Sign In</span></div>
-    </div>
-
-    <!-- VIEW 4: PROFILE & DASHBOARD -->
-    <div class="container" id="profileView" style="max-width: 600px;">
-        <div class="profile-card">
-            <div class="avatar" id="userAvatar">?</div>
-            <!-- The actual name is injected here -->
-            <h2 id="userNameDisplay" style="margin-bottom: 5px;">User</h2>
-            <p id="userEmailDisplay" style="color: var(--text-muted); margin-bottom: 25px;"></p>
-            <button class="btn-outline" onclick="logout()" style="width: auto; padding: 10px 20px; font-size:0.9rem;">Sign Out</button>
+    <div class="container">
+        <h1 id="pageTitle">Post a Listing</h1>
+        
+        <div class="row">
+            <div class="form-group">
+                <label>I am...</label>
+                <select id="postType">
+                    <option value="offering">Offering a Room</option>
+                    <option value="seeking">Seeking a Room</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="category">
+                    <option value="1BHK">1 BHK</option>
+                    <option value="1RK">1 RK</option>
+                    <option value="2BHK">2 BHK</option>
+                    <option value="PG">PG / Hostel</option>
+                    <option value="Shared">Shared Room</option>
+                </select>
+            </div>
         </div>
-        <div class="dashboard-title">My Listings</div>
-        <div id="myPostsContainer">
-            <div style="text-align:center; padding: 20px; color: var(--text-muted);">Loading your posts...</div>
+
+        <div class="form-group">
+            <label>Location (Area, Chowk, or Building)</label>
+            <input type="text" id="locSearch" placeholder="e.g., Bavdhan, Chandni Chowk..." autocomplete="off">
+            <div id="locSuggestions" class="suggestions-box"></div>
+            <input type="hidden" id="locLat">
+            <input type="hidden" id="locLon">
+            <input type="hidden" id="locCleanName">
         </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Rent (₹ / mo)</label>
+                <input type="number" id="rent" placeholder="e.g. 15000" min="1">
+            </div>
+            <div class="form-group">
+                <label>Deposit (₹)</label>
+                <input type="number" id="deposit" placeholder="e.g. 45000" min="1">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Brokerage (₹) - Enter 0 if none</label>
+            <input type="number" id="brokerage" value="0" min="0">
+        </div>
+
+        <div class="form-group">
+            <label>Call Contact Number <span style="color:var(--primary)">*</span></label>
+            <input type="tel" id="contactNumber" placeholder="+91 9876543210">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="diffWaBox" onchange="toggleWaField()">
+            <label for="diffWaBox">My WhatsApp number is different</label>
+        </div>
+
+        <div class="form-group" id="waGroup" style="display: none;">
+            <label>WhatsApp Number <span style="color:var(--primary)">*</span></label>
+            <input type="tel" id="whatsappNumber" placeholder="+91 9876543210">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="showContact" checked>
+            <label for="showContact">Show my number publicly on the listing</label>
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" rows="4" placeholder="Mention amenities, rules, family/bachelor preferences, exact location details..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Photos (Max 3)</label>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;" id="photoNotice">Upload new photos to replace existing ones, or leave blank to keep current photos.</div>
+            <input type="file" id="imageInput" accept="image/*" multiple max="3">
+            <div id="imagePreviewContainer" class="image-preview-container"></div>
+        </div>
+
+        <button class="btn-submit" id="submitBtn" onclick="handleSubmit()">Submit Listing</button>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -114,15 +141,19 @@
     <nav class="bottom-nav">
         <a href="/" class="nav-item"><span class="nav-icon">🏠</span>Home</a>
         <a href="/map" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
-        <a href="/post" class="nav-item add-post-btn">+</a>
+        <a href="/post" class="nav-item active add-post-btn">+</a>
         <a href="/chat" class="nav-item"><span class="nav-icon">💬</span>Chat</a>
-        <a href="/auth" class="nav-item active"><span class="nav-icon">👤</span>Account</a>
+        <a href="/auth" class="nav-item"><span class="nav-icon">👤</span>Account</a>
     </nav>
 
     <script>
         if (typeof CONFIG === 'undefined') alert("Config missing. Check your script paths.");
         const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         
+        let uploadedImageUrls = [];
+        let selectedFiles = [];
+        let editingPostId = null;
+
         function showToast(message, type = 'success') {
             const toast = document.getElementById("toast");
             toast.innerText = message;
@@ -130,127 +161,294 @@
             setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
         }
 
-        function switchView(viewId) {
-            ['loginView', 'signupView', 'forgotView', 'profileView'].forEach(id => document.getElementById(id).style.display = 'none');
-            document.getElementById(viewId).style.display = 'block';
+        function toggleWaField() {
+            const box = document.getElementById('diffWaBox');
+            const field = document.getElementById('waGroup');
+            field.style.display = box.checked ? 'block' : 'none';
         }
 
-        async function handleLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            if(!email || !password) return showToast("Please enter email and password.", "error");
-
-            const btn = document.getElementById('loginBtn');
-            btn.disabled = true; btn.innerText = "Signing in...";
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) { showToast(error.message, "error"); btn.disabled = false; btn.innerText = "Sign In"; } 
-            else { completeAuthFlow(data); }
-        }
-
-        async function handleSignup() {
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            if(!email || !password) return showToast("Please enter email and password.", "error");
-            if(password.length < 6) return showToast("Password must be at least 6 characters.", "error");
-
-            const btn = document.getElementById('signupBtn');
-            btn.disabled = true; btn.innerText = "Creating Account...";
-
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) { showToast(error.message, "error"); btn.disabled = false; btn.innerText = "Sign Up"; } 
-            else {
-                if (data.user && data.user.identities && data.user.identities.length === 0) {
-                    showToast("Email already exists. Please sign in.", "error"); btn.disabled = false; btn.innerText = "Sign Up";
-                } else if (data.session) { completeAuthFlow(data); } 
-                else { showToast("Account created! Check your email to verify.", "success"); setTimeout(() => switchView('loginView'), 3000); }
-            }
-        }
-
-        async function handleReset() {
-            const email = document.getElementById('resetEmail').value.trim();
-            if(!email) return showToast("Please enter your email.", "error");
-            const btn = document.getElementById('resetBtn');
-            btn.disabled = true; btn.innerText = "Sending...";
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth' });
-            if (error) { showToast(error.message, "error"); } 
-            else { showToast("Password reset link sent!", "success"); setTimeout(() => switchView('loginView'), 3000); }
-            btn.disabled = false; btn.innerText = "Send Reset Link";
-        }
-
-        function completeAuthFlow(data) {
-            localStorage.setItem('tingo_session_token', data.session.access_token);
-            localStorage.setItem('tingo_user_id', data.user.id);
-            localStorage.setItem('tingo_user_email', data.user.email);
-            localStorage.setItem('tingo_user_name', data.user.email.split('@')[0]);
-
-            const redirectTarget = localStorage.getItem('redirect_after_login');
-            if (redirectTarget) { localStorage.removeItem('redirect_after_login'); window.location.href = redirectTarget; } 
-            else { window.location.reload(); }
-        }
-
-        async function logout() {
-            await supabaseClient.auth.signOut();
-            localStorage.clear();
-            window.location.reload();
-        }
-
-        // --- SECURE DASHBOARD ---
-        async function loadDashboard() {
-            const email = localStorage.getItem('tingo_user_email') || 'User';
-            const userName = localStorage.getItem('tingo_user_name') || email.split('@')[0];
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            const token = localStorage.getItem('tingo_session_token');
             const userId = localStorage.getItem('tingo_user_id');
+
+            // --- EDIT MODE ---
+            if (editId) {
+                if (!token || !userId) {
+                    localStorage.setItem('redirect_after_login', '/post?edit=' + editId);
+                    window.location.href = '/auth';
+                    return;
+                }
+                
+                editingPostId = editId;
+                document.getElementById('pageTitle').innerText = 'Edit Listing';
+                document.getElementById('submitBtn').innerText = 'Loading Data...';
+                document.getElementById('submitBtn').disabled = true;
+
+                // SECURE FETCH: Checks ID and User Ownership simultaneously
+                supabaseClient.from('posts').select('*').eq('id', editId).eq('user_id', userId).single()
+                .then(({data, error}) => {
+                    if (error || !data) {
+                        showToast("Error loading post or unauthorized.", "error");
+                        document.getElementById('submitBtn').innerText = 'Submit Listing';
+                        document.getElementById('submitBtn').disabled = false;
+                        return;
+                    }
+                    
+                    document.getElementById('postType').value = data.post_type;
+                    document.getElementById('category').value = data.category;
+                    document.getElementById('locSearch').value = data.location;
+                    document.getElementById('locCleanName').value = data.location;
+                    document.getElementById('locLat').value = data.latitude;
+                    document.getElementById('locLon').value = data.longitude;
+                    document.getElementById('rent').value = data.rent_amount;
+                    document.getElementById('deposit').value = data.deposit_amount;
+                    document.getElementById('brokerage').value = data.brokerage_amount || 0;
+                    document.getElementById('contactNumber').value = data.contact_number;
+                    
+                    if (data.whatsapp_number && data.whatsapp_number !== data.contact_number) {
+                        document.getElementById('diffWaBox').checked = true;
+                        document.getElementById('whatsappNumber').value = data.whatsapp_number;
+                        toggleWaField();
+                    }
+                    
+                    document.getElementById('showContact').checked = data.show_contact;
+                    document.getElementById('description').value = data.description;
+                    
+                    // Show existing images
+                    if(data.image_urls && data.image_urls.length > 0) {
+                        uploadedImageUrls = data.image_urls; // Store them in case user doesn't upload new ones
+                        const container = document.getElementById('imagePreviewContainer');
+                        data.image_urls.forEach(url => {
+                            const img = document.createElement('img');
+                            img.src = url; img.className = 'image-preview';
+                            container.appendChild(img);
+                        });
+                    }
+
+                    document.getElementById('submitBtn').innerText = 'Update Listing';
+                    document.getElementById('submitBtn').disabled = false;
+                });
+
+            } else {
+                // --- NEW POST MODE (Draft Check) ---
+                const draft = localStorage.getItem('tingo_post_draft');
+                if (draft) {
+                    const data = JSON.parse(draft);
+                    document.getElementById('postType').value = data.postType || 'offering';
+                    document.getElementById('category').value = data.category || '1BHK';
+                    document.getElementById('locSearch').value = data.locationName || '';
+                    document.getElementById('locLat').value = data.lat || '';
+                    document.getElementById('locLon').value = data.lon || '';
+                    document.getElementById('locCleanName').value = data.cleanName || '';
+                    document.getElementById('rent').value = data.rent || '';
+                    document.getElementById('deposit').value = data.deposit || '';
+                    document.getElementById('brokerage').value = data.brokerage || '';
+                    document.getElementById('contactNumber').value = data.contactNumber || '';
+                    
+                    if (data.whatsappNumber && data.whatsappNumber !== data.contactNumber) {
+                        document.getElementById('diffWaBox').checked = true;
+                        document.getElementById('whatsappNumber').value = data.whatsappNumber;
+                        toggleWaField();
+                    }
+
+                    document.getElementById('showContact').checked = data.showContact !== false;
+                    document.getElementById('description').value = data.description || '';
+                    
+                    localStorage.removeItem('tingo_post_draft');
+                    if(data.rent) { showToast("Welcome back! Your draft has been restored.", "success"); }
+                }
+            }
+        };
+
+        const locSearch = document.getElementById('locSearch');
+        const locSuggestions = document.getElementById('locSuggestions');
+        let searchTimeout;
+
+        locSearch.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
             
-            // Displays the user's actual name
-            document.getElementById('userEmailDisplay').innerText = email;
-            document.getElementById('userNameDisplay').innerText = userName;
-            document.getElementById('userAvatar').innerText = userName.charAt(0).toUpperCase();
+            document.getElementById('locLat').value = '';
+            document.getElementById('locLon').value = '';
 
-            const container = document.getElementById('myPostsContainer');
+            if (query.length < 2) { locSuggestions.style.display = 'none'; return; }
 
-            // Strictly fetches ONLY the posts owned by this exact user
-            const { data: posts, error } = await supabaseClient
-                .from('posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+            locSuggestions.innerHTML = '<div class="suggestion-item"><span class="main-text" style="color:var(--primary); text-align:center;">Searching...</span></div>';
+            locSuggestions.style.display = 'block';
 
-            if (error) { container.innerHTML = '<div style="color:red; text-align:center;">Error loading posts.</div>'; return; }
-            if (!posts || posts.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">You have not posted any rooms yet.<br><br><button class="btn-submit" onclick="window.location.href=\'/post\'" style="width: auto; padding: 10px 20px;">Post a Room</button></div>'; return;
+            searchTimeout = setTimeout(() => {
+                fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&lat=18.5204&lon=73.8567&limit=6')
+                .then(r => r.json())
+                .then(data => {
+                    locSuggestions.innerHTML = '';
+                    if (data.features && data.features.length > 0) {
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            const coords = feature.geometry.coordinates; 
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            
+                            const mainName = props.name || props.street || query;
+                            const subName = [props.district, props.city, props.state].filter(Boolean).join(', ');
+                            
+                            div.innerHTML = `<span class="main-text">${mainName}</span><span class="sub-text">${subName || 'Pune'}</span>`;
+
+                            div.onclick = () => {
+                                locSearch.value = mainName + ', ' + (props.city || 'Pune');
+                                document.getElementById('locCleanName').value = mainName;
+                                document.getElementById('locLat').value = coords[1];
+                                document.getElementById('locLon').value = coords[0];
+                                locSuggestions.style.display = 'none';
+                            };
+                            locSuggestions.appendChild(div);
+                        });
+                        locSuggestions.style.display = 'block';
+                    } else {
+                        locSuggestions.innerHTML = '<div class="suggestion-item"><span class="sub-text" style="text-align:center;">No exact locations found</span></div>';
+                    }
+                }).catch(() => { locSuggestions.style.display = 'none'; });
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!locSearch.contains(e.target) && !locSuggestions.contains(e.target)) {
+                locSuggestions.style.display = 'none';
+            }
+        });
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const container = document.getElementById('imagePreviewContainer');
+            container.innerHTML = '';
+            selectedFiles = Array.from(e.target.files).slice(0, 3); 
+
+            // Clear old URLs because user is replacing them
+            uploadedImageUrls = []; 
+
+            selectedFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.className = 'image-preview';
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        async function handleSubmit() {
+            const type = document.getElementById('postType').value;
+            const category = document.getElementById('category').value;
+            const rent = parseInt(document.getElementById('rent').value);
+            const deposit = parseInt(document.getElementById('deposit').value);
+            const brokerage = parseInt(document.getElementById('brokerage').value) || 0;
+            const contactNumber = document.getElementById('contactNumber').value.trim();
+            const showContact = document.getElementById('showContact').checked;
+            const description = document.getElementById('description').value;
+            const locName = document.getElementById('locSearch').value;
+            const cleanLocName = document.getElementById('locCleanName').value || locName;
+            const lat = document.getElementById('locLat').value;
+            const lon = document.getElementById('locLon').value;
+
+            if(!rent || !deposit || !description || !contactNumber) {
+                showToast("Please fill out Rent, Deposit, Contact Number, and Description.", "error"); return;
+            }
+            if(rent <= 0 || deposit <= 0) {
+                showToast("Rent and Deposit amounts must be greater than zero.", "error"); return;
+            }
+            if(!lat || !lon) {
+                showToast("Please select a valid location from the dropdown suggestions.", "error"); return;
             }
 
-            container.innerHTML = '';
-            posts.forEach(post => {
-                const statusClass = post.status === 'approved' ? 'status-approved' : 'status-pending';
-                const statusText = post.status === 'approved' ? 'Live' : 'Pending Review';
-                
-                container.innerHTML += `
-                    <div class="my-post-card" id="post-card-${post.id}">
-                        <div class="post-header">
-                            <div class="post-title">${post.title}</div>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 5px;">📍 ${post.location} | ₹${post.rent_amount}/mo</div>
-                        <div class="post-actions">
-                            <button class="btn-action btn-edit" onclick="editPost('${post.id}')">Edit</button>
-                            <button class="btn-action btn-delete" onclick="deletePost('${post.id}')">Delete</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+            let whatsappNumber = contactNumber;
+            if (document.getElementById('diffWaBox').checked) {
+                whatsappNumber = document.getElementById('whatsappNumber').value.trim();
+                if(!whatsappNumber) { showToast("Please enter your specific WhatsApp number.", "error"); return; }
+            }
 
-        async function deletePost(postId) {
-            if(!confirm("Are you sure you want to permanently delete this listing?")) return;
-            const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
-            if (error) { showToast("Failed to delete: " + error.message, "error"); } 
-            else { document.getElementById(`post-card-${postId}`).remove(); showToast("Listing deleted.", "success"); }
-        }
+            const btn = document.getElementById('submitBtn');
+            const token = localStorage.getItem('tingo_session_token');
+            const userId = localStorage.getItem('tingo_user_id');
 
-        // Routes securely to the editor
-        function editPost(postId) {
-            window.location.href = '/post?edit=' + postId;
-        }
+            // Frictionless Check (For New Posts Only)
+            if (!token || !userId) {
+                const draft = { 
+                    postType: type, category: category, rent: rent, deposit: deposit, brokerage: brokerage, 
+                    contactNumber: contactNumber, whatsappNumber: whatsappNumber, showContact: showContact, 
+                    description: description, locationName: locName, cleanName: cleanLocName, lat: lat, lon: lon 
+                };
+                localStorage.setItem('tingo_post_draft', JSON.stringify(draft));
+                localStorage.setItem('redirect_after_login', '/post');
+                window.location.href = '/auth';
+                return;
+            }
 
-        if (storedToken) { loadDashboard(); }
+            btn.disabled = true;
+            btn.innerText = selectedFiles.length > 0 ? 'Uploading Images...' : 'Saving Listing...';
+
+            try {
+                // Only upload if new files were selected
+                if (selectedFiles.length > 0) {
+                    for (let file of selectedFiles) {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${CONFIG.IMGBB_API_KEY}`, { method: 'POST', body: formData });
+                        const data = await res.json();
+                        if(data.success) { uploadedImageUrls.push(data.data.url); }
+                    }
+                }
+
+                btn.innerText = editingPostId ? 'Updating Listing...' : 'Saving Listing...';
+                const titleStr = `${category} ${type === 'seeking' ? 'Requirement' : 'Available'} in ${cleanLocName}`;
+
+                const payload = {
+                    title: titleStr,
+                    category: category,
+                    post_type: type,
+                    location: locName,
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    rent_amount: rent,
+                    deposit_amount: deposit,
+                    brokerage_amount: brokerage,
+                    contact_number: contactNumber,
+                    whatsapp_number: whatsappNumber,
+                    show_contact: showContact,
+                    description: description,
+                    status: 'pending' // Send back to pending queue on update
+                };
+
+                // Attach images if we have them (either newly uploaded or preserved from edit load)
+                if (uploadedImageUrls.length > 0) {
+                    payload.image_urls = uploadedImageUrls;
+                }
+
+                if (editingPostId) {
+                    // SECURE UPDATE: Ensures user_id matches
+                    const { error } = await supabaseClient.from('posts').update(payload).eq('id', editingPostId).eq('user_id', userId);
+                    if (error) throw error;
+                    showToast('Success! Your listing has been updated and is pending review.', 'success');
+                } else {
+                    // INSERT NEW
+                    const slugStr = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substr(2, 4);
+                    payload.user_id = userId;
+                    payload.slug = slugStr;
+                    
+                    const { error } = await supabaseClient.from('posts').insert([payload]);
+                    if (error) throw error;
+                    showToast('Success! Your listing has been submitted and is pending review.', 'success');
+                }
+
+                setTimeout(() => { window.location.href = '/auth'; }, 2000);
+
+            } catch (err) {
+                showToast("Error: " + err.message, "error");
+                btn.disabled = false;
+                btn.innerText = editingPostId ? 'Update Listing' : 'Submit Listing';
+            }
+        }
     </script>
 </body>
 </html>
