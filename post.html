@@ -153,6 +153,7 @@
         let uploadedImageUrls = [];
         let selectedFiles = [];
         let editingPostId = null;
+        let originalPostData = null; // Used to detect if changes were actually made
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById("toast");
@@ -196,16 +197,20 @@
                         return;
                     }
                     
-                    document.getElementById('postType').value = data.post_type;
-                    document.getElementById('category').value = data.category;
-                    document.getElementById('locSearch').value = data.location;
-                    document.getElementById('locCleanName').value = data.location;
-                    document.getElementById('locLat').value = data.latitude;
-                    document.getElementById('locLon').value = data.longitude;
-                    document.getElementById('rent').value = data.rent_amount;
-                    document.getElementById('deposit').value = data.deposit_amount;
+                    // Memorize data to check for changes later
+                    originalPostData = data;
+                    
+                    // Safely assign data to prevent "null" string bugs
+                    document.getElementById('postType').value = data.post_type || 'offering';
+                    document.getElementById('category').value = data.category || '1BHK';
+                    document.getElementById('locSearch').value = data.location || '';
+                    document.getElementById('locCleanName').value = data.location || '';
+                    document.getElementById('locLat').value = data.latitude || '';
+                    document.getElementById('locLon').value = data.longitude || '';
+                    document.getElementById('rent').value = data.rent_amount || '';
+                    document.getElementById('deposit').value = data.deposit_amount || '';
                     document.getElementById('brokerage').value = data.brokerage_amount || 0;
-                    document.getElementById('contactNumber').value = data.contact_number;
+                    document.getElementById('contactNumber').value = data.contact_number || '';
                     
                     if (data.whatsapp_number && data.whatsapp_number !== data.contact_number) {
                         document.getElementById('diffWaBox').checked = true;
@@ -213,12 +218,12 @@
                         toggleWaField();
                     }
                     
-                    document.getElementById('showContact').checked = data.show_contact;
-                    document.getElementById('description').value = data.description;
+                    document.getElementById('showContact').checked = data.show_contact !== false;
+                    document.getElementById('description').value = data.description || '';
                     
                     // Show existing images
                     if(data.image_urls && data.image_urls.length > 0) {
-                        uploadedImageUrls = data.image_urls; // Store them in case user doesn't upload new ones
+                        uploadedImageUrls = data.image_urls; // Preserve them
                         const container = document.getElementById('imagePreviewContainer');
                         data.image_urls.forEach(url => {
                             const img = document.createElement('img');
@@ -368,6 +373,26 @@
                 if(!whatsappNumber) { showToast("Please enter your specific WhatsApp number.", "error"); return; }
             }
 
+            // SMART DIFF: Check if anything actually changed before updating Supabase
+            if (editingPostId && originalPostData && selectedFiles.length === 0) {
+                if (
+                    type === originalPostData.post_type &&
+                    category === originalPostData.category &&
+                    rent === originalPostData.rent_amount &&
+                    deposit === originalPostData.deposit_amount &&
+                    brokerage === (originalPostData.brokerage_amount || 0) &&
+                    contactNumber === (originalPostData.contact_number || '') &&
+                    whatsappNumber === (originalPostData.whatsapp_number || '') &&
+                    showContact === (originalPostData.show_contact !== false) &&
+                    description === (originalPostData.description || '') &&
+                    locName === (originalPostData.location || '')
+                ) {
+                    showToast("No changes detected. Listing is already up to date.", "success");
+                    setTimeout(() => { window.location.href = '/auth'; }, 1500);
+                    return;
+                }
+            }
+
             const btn = document.getElementById('submitBtn');
             const token = localStorage.getItem('tingo_session_token');
             const userId = localStorage.getItem('tingo_user_id');
@@ -420,7 +445,7 @@
                     status: 'pending' // Send back to pending queue on update
                 };
 
-                // Attach images if we have them (either newly uploaded or preserved from edit load)
+                // Attach images if we have them
                 if (uploadedImageUrls.length > 0) {
                     payload.image_urls = uploadedImageUrls;
                 }
