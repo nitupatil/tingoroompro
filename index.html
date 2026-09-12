@@ -7,9 +7,21 @@
     <meta name="description" content="Discover verified room rentals, shared apartments, and flatmates across Pune.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --surface-light: #262626; --text-main: #ffffff; --text-muted: #a3a3a3; --shadow: 0 4px 6px -1px rgba(0,0,0,0.5); --nav-height: 65px; }
+        :root { --primary: #dc2626; --bg: #000000; --surface: #121212; --surface-light: #262626; --text-main: #ffffff; --text-muted: #a3a3a3; --shadow: 0 4px 6px -1px rgba(0,0,0,0.5); --nav-height: 65px; --header-desktop-height: 80px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); }
+        
+        /* Desktop/Tablet Navigation */
+        .desktop-nav { display: none; position: sticky; top: 0; background-color: rgba(0,0,0,0.95); backdrop-filter: blur(10px); padding: 0 40px; height: var(--header-desktop-height); z-index: 100; border-bottom: 1px solid var(--surface-light); align-items: center; justify-content: space-between; }
+        .desktop-nav .logo { font-size: 1.8rem; font-weight: 800; text-decoration: none; color: #fff; }
+        .desktop-nav .logo span { color: var(--primary); }
+        .desktop-nav-links { display: flex; gap: 30px; align-items: center; }
+        .desktop-nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+        .desktop-nav-link:hover { color: var(--text-main); }
+        .desktop-nav-link.active { color: var(--primary); }
+        .desktop-add-btn { background-color: var(--primary); color: white !important; padding: 10px 24px; border-radius: 8px; font-weight: 600; }
+        
+        /* Mobile Header */
         header { position: sticky; top: 0; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(10px); padding: 15px 20px; z-index: 100; border-bottom: 1px solid var(--surface-light); }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .logo { font-size: 1.5rem; font-weight: 800; text-decoration: none; color: #fff; }
@@ -22,11 +34,16 @@
         .suggestion-item span.main-text { color: white; font-weight: 600; margin-bottom: 2px; }
         .suggestion-item span.sub-text { font-size: 0.75rem; color: #737373; }
         .suggestion-item:hover { background-color: var(--surface-light); }
-        .feed-container { padding: 20px; max-width: 900px; margin: 0 auto; }
+        
+        /* Feed Container - Responsive Grid */
+        .feed-container { padding: 20px; max-width: 1400px; margin: 0 auto; }
         .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-muted); }
         .notice-banner { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.4); color: #fca5a5; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 15px; display: none; }
-        .card { background-color: var(--surface); border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--surface-light); cursor: pointer; text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); }
+        
+        /* Card Grid Layout */
+        .listings-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .card { background-color: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--surface-light); cursor: pointer; text-decoration: none; color: inherit; display: block; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
         .card-img { width: 100%; height: 200px; background-color: var(--surface-light); object-fit: cover; }
         .card-body { padding: 15px; }
         .card-price { color: var(--text-main); font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -37,14 +54,59 @@
         .type-badge { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
         .type-seeking { background: rgba(239,68,68,0.2); color: #f87171; }
         .type-offering { background: rgba(16,185,129,0.2); color: #34d399; }
+        
+        /* Bottom Navigation - Mobile Only */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background-color: var(--surface); border-top: 1px solid var(--surface-light); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
         .nav-item { color: var(--text-muted); text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; font-weight: 500; width: 25%; }
         .nav-item.active { color: var(--primary); }
         .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
         .add-post-btn { background-color: var(--primary); color: white !important; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; transform: translateY(-10px); box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); }
+        
+        /* Tablet Styles (768px and up) */
+        @media (min-width: 768px) {
+            body { padding-bottom: 20px; }
+            header { display: none; }
+            .desktop-nav { display: flex; }
+            .feed-container { padding: 30px 40px; }
+            .section-title { font-size: 1.5rem; margin-bottom: 25px; }
+            .listings-grid { grid-template-columns: repeat(2, 1fr); gap: 25px; }
+            .card-img { height: 220px; }
+            .bottom-nav { display: none; }
+        }
+        
+        /* Desktop Styles (1024px and up) */
+        @media (min-width: 1024px) {
+            .desktop-nav { padding: 0 60px; }
+            .feed-container { padding: 40px 60px; }
+            .listings-grid { grid-template-columns: repeat(3, 1fr); gap: 30px; }
+            .card-img { height: 240px; }
+            .card-price { font-size: 1.6rem; }
+            .card-title { font-size: 1.2rem; }
+        }
+        
+        /* Large Desktop (1400px and up) */
+        @media (min-width: 1400px) {
+            .desktop-nav { padding: 0 80px; }
+            .feed-container { padding: 50px 80px; }
+            .listings-grid { grid-template-columns: repeat(4, 1fr); gap: 35px; }
+        }
     </style>
 </head>
 <body>
+    <!-- Desktop Navigation -->
+    <nav class="desktop-nav">
+        <a href="/" class="logo">Tingo<span>Rooms.</span></a>
+        <div class="desktop-nav-links">
+            <div id="user-greeting-desktop" style="font-size:0.9rem; color:var(--text-muted); margin-right:15px;"></div>
+            <a href="/" class="desktop-nav-link active">🏠 Home</a>
+            <a href="/map" class="desktop-nav-link">🗺️ Map</a>
+            <a href="/chat" class="desktop-nav-link">💬 Chat</a>
+            <a href="/auth" class="desktop-nav-link">👤 Account</a>
+            <a href="/post" class="desktop-nav-link desktop-add-btn">+ Post Listing</a>
+        </div>
+    </nav>
+    
+    <!-- Mobile Header -->
     <header>
         <div class="header-top">
             <a href="/" class="logo">Tingo<span>Rooms.</span></a>
@@ -59,9 +121,10 @@
     <main class="feed-container">
         <div id="noticeBanner" class="notice-banner"></div>
         <div class="section-title" id="feed-title">All Rooms in Pune</div>
-        <div id="listings-wrapper"></div>
+        <div id="listings-wrapper" class="listings-grid"></div>
     </main>
-
+    
+    <!-- Mobile Bottom Navigation -->
     <nav class="bottom-nav">
         <a href="/" class="nav-item active"><span class="nav-icon">🏠</span>Home</a>
         <a href="/map" class="nav-item"><span class="nav-icon">🗺️</span>Map</a>
@@ -221,8 +284,14 @@
         window.addEventListener('DOMContentLoaded', () => {
             const userName = localStorage.getItem('tingo_user_name');
             if (userName) {
-                document.getElementById('user-greeting').innerText = 'Hi, ' + userName.split(' ')[0];
+                const greetingText = 'Hi, ' + userName.split(' ')[0];
+                document.getElementById('user-greeting').innerText = greetingText;
                 document.getElementById('user-greeting').style.color = '#fff';
+                const desktopGreeting = document.getElementById('user-greeting-desktop');
+                if (desktopGreeting) {
+                    desktopGreeting.innerText = greetingText;
+                    desktopGreeting.style.color = '#fff';
+                }
             }
         });
     </script>
